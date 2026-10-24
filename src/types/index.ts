@@ -167,6 +167,14 @@ export interface TransactionRecord {
   paymentMethod?: string;
 }
 
+export interface SessionParticipant {
+  studentId: string;
+  studentName: string;
+  studentAvatar: string;
+  role: 'learner' | 'mentor';
+  joinedAt?: string;
+}
+
 export interface LearningSession {
   id: string;
   topic: string;
@@ -181,13 +189,20 @@ export interface LearningSession {
   timeSlot: string;
   format: 'Online Video' | 'Campus In-Person';
   status: 'pending' | 'accepted' | 'upcoming' | 'completed' | 'cancelled' | 'disputed';
-  creditsRequired: number; // default 5 credits
+  creditsRequired: number; // default 2 or 5 credits
   creditsTransferred: boolean;
   confirmedByMentor: boolean;
   confirmedByLearner: boolean;
   notes?: string;
   meetLink?: string;
   location?: string;
+  
+  // Group Learning & Live Meet
+  sessionType?: '1-on-1' | 'group';
+  maxParticipants?: number; // 3 or 4 peers
+  enrolledParticipants?: SessionParticipant[];
+  isLive?: boolean;
+  liveStartedAt?: string;
 }
 
 export interface LearningMatchCycleNode {

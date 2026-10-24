@@ -25,7 +25,12 @@ import {
   Coins,
   ShieldCheck,
   Search,
-  ExternalLink
+  ExternalLink,
+  Radio,
+  Play,
+  Share2,
+  Users2,
+  UserPlus
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { computeSmartSkillMatches } from '../utils/matchingAlgorithm';
@@ -46,11 +51,15 @@ export const LearnTogetherPage: React.FC = () => {
     unlockMatch,
     isMatchUnlocked,
     setFakePaymentModalOpen,
-    setPendingUnlockTeacherId
+    setPendingUnlockTeacherId,
+    joinGroupSession,
+    createGroupSession,
+    toggleLiveMeet,
+    setActiveLiveMeetSession
   } = useApp();
 
-  // Active view tab
-  const [activeTab, setActiveTab] = useState<'matches' | 'teachers' | 'my_skills' | 'sessions'>('matches');
+  // Active view tab (defaults to Group Study 3-4 peers)
+  const [activeTab, setActiveTab] = useState<'matches' | 'groups' | 'live' | 'teachers' | 'my_skills' | 'sessions'>('groups');
 
   // Skill Search & Category Filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,10 +73,10 @@ export const LearnTogetherPage: React.FC = () => {
   const [newLearnSkill, setNewLearnSkill] = useState('');
   const [newLearnLevel, setNewLearnLevel] = useState<'Beginner' | 'Intermediate' | 'Advanced'>('Beginner');
 
-  // Schedule Session Modal
+  // Schedule 1-on-1 Session Modal
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
-  const [targetTeacherId, setTargetTeacherId] = useState<string>('user-anu');
-  const [targetSkillName, setTargetSkillName] = useState<string>('Django');
+  const [targetTeacherId, setTargetTeacherId] = useState<string>('user-ann-mary');
+  const [targetSkillName, setTargetSkillName] = useState<string>('Machine Learning');
   const [sessionDate, setSessionDate] = useState('2026-10-28');
   const [sessionTime, setSessionTime] = useState('6:00 PM - 7:00 PM');
   const [sessionFormat, setSessionFormat] = useState<'Online Video' | 'Campus In-Person'>('Online Video');
@@ -75,18 +84,31 @@ export const LearnTogetherPage: React.FC = () => {
   const [bookingSuccessMsg, setBookingSuccessMsg] = useState(false);
   const [statusNotification, setStatusNotification] = useState<string | null>(null);
 
+  // Host Group Study (3-4 Peers) Modal
+  const [hostGroupModalOpen, setHostGroupModalOpen] = useState(false);
+  const [groupTopic, setGroupTopic] = useState('');
+  const [groupSkill, setGroupSkill] = useState('Machine Learning');
+  const [groupMaxParticipants, setGroupMaxParticipants] = useState<number>(4);
+  const [groupDate, setGroupDate] = useState('2026-10-30');
+  const [groupTime, setGroupTime] = useState('6:00 PM - 7:30 PM');
+  const [groupFormat, setGroupFormat] = useState<'Online Video' | 'Campus In-Person'>('Online Video');
+  const [groupNotes, setGroupNotes] = useState('');
+  const [groupStartLiveNow, setGroupStartLiveNow] = useState(false);
+
   const categories = [
     'All',
+    'Machine Learning',
+    'Embedded Systems',
+    'Ethical Hacking & Web Sec',
+    'CAD Modeling & SolidWorks',
     'Figma',
     'Django',
     'Canva',
     'Flutter',
     'Python',
     'Java',
-    'Web Development',
-    'UI/UX Design',
-    'Graphic Design',
-    'Video Editing'
+    'Internet of Things (IoT)',
+    'Robotics & Arduino'
   ];
 
   // Compute smart matches using real deterministic rule-based algorithm
@@ -108,6 +130,12 @@ export const LearnTogetherPage: React.FC = () => {
 
     return matchesSearch && matchesCat;
   });
+
+  // Group study sessions (3-4 students)
+  const groupSessions = learningSessions.filter(s => s.sessionType === 'group');
+
+  // Currently Live Sessions
+  const liveSessions = learningSessions.filter(s => s.isLive);
 
   const handleAddTeach = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,6 +292,35 @@ export const LearnTogetherPage: React.FC = () => {
       {/* Main Navigation Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-3 overflow-x-auto">
         <button
+          onClick={() => setActiveTab('groups')}
+          className={`px-4 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 ${
+            activeTab === 'groups'
+              ? 'bg-purple-900 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Users2 className="w-3.5 h-3.5 text-indigo-400" />
+          <span>Group Study (3-4 Peers) ({groupSessions.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('live')}
+          className={`px-4 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 ${
+            activeTab === 'live'
+              ? 'bg-rose-700 text-white shadow-md'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <Radio className={`w-3.5 h-3.5 ${liveSessions.length > 0 ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`} />
+          <span>Live Teaching & Meets</span>
+          {liveSessions.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[10px] font-black animate-pulse">
+              {liveSessions.length} LIVE
+            </span>
+          )}
+        </button>
+
+        <button
           onClick={() => setActiveTab('matches')}
           className={`px-4 py-2 rounded-2xl text-xs font-extrabold whitespace-nowrap transition-all flex items-center gap-2 ${
             activeTab === 'matches'
@@ -314,6 +371,311 @@ export const LearnTogetherPage: React.FC = () => {
           )}
         </button>
       </div>
+
+      {/* ============================================================ */}
+      {/* TAB: GROUP STUDY CIRCLES (3-4 PEERS) */}
+      {/* ============================================================ */}
+      {activeTab === 'groups' && (
+        <div className="space-y-6">
+          {/* Header Banner */}
+          <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl border border-purple-800/40">
+            <div className="space-y-1.5 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
+                  <Users2 className="w-3 h-3 fill-current" />
+                  Small Cohorts: 3-4 Students
+                </span>
+                <span className="text-indigo-200 text-xs font-semibold">Interactive Group Circles</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Collaborative Group Learning & Live Workshops
+              </h2>
+              <p className="text-xs text-indigo-100/90 leading-relaxed">
+                Study difficult topics in intimate cohorts of 3 to 4 student peers. Learn directly from verified mentors like Ann Mary, Abiya Daniel, and Anjali T Paul, or host your own circle to earn teaching credits!
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setGroupTopic('');
+                setGroupNotes('');
+                setGroupStartLiveNow(false);
+                setHostGroupModalOpen(true);
+              }}
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-400/20 shrink-0 transition-all cursor-pointer group"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>Host a Group Study (3-4 Peers)</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
+          {/* Group Sessions Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {groupSessions.map((session) => {
+              const enrolled = session.enrolledParticipants || [];
+              const max = session.maxParticipants || 4;
+              const isFull = enrolled.length >= max;
+              const isHost = session.mentorId === currentUser.id;
+              const isEnrolled = isHost || enrolled.some(p => p.studentId === currentUser.id);
+
+              return (
+                <div 
+                  key={session.id}
+                  className={`bg-white rounded-3xl p-6 border transition-all flex flex-col justify-between shadow-sm hover:shadow-md relative ${
+                    session.isLive ? 'border-rose-400 ring-2 ring-rose-400/20' : 'border-slate-200'
+                  }`}
+                >
+                  <div className="space-y-4">
+                    {/* Top Badges */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        {session.isLive ? (
+                          <span className="px-2.5 py-1 rounded-full bg-rose-500 text-white font-mono text-[10px] font-black uppercase flex items-center gap-1.5 animate-pulse shadow-sm shadow-rose-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                            Live Classroom Active
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-900 font-bold text-[10px] uppercase">
+                            Group Study (Max {max} Peers)
+                          </span>
+                        )}
+                        <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                          {session.skillName}
+                        </span>
+                      </div>
+
+                      {/* Participant Count Pill */}
+                      <span className={`px-2.5 py-1 rounded-full font-bold text-xs flex items-center gap-1.5 ${
+                        isFull 
+                          ? 'bg-slate-100 text-slate-500' 
+                          : 'bg-emerald-100 text-emerald-900'
+                      }`}>
+                        <Users className="w-3.5 h-3.5" />
+                        <span>{enrolled.length}/{max} Enrolled</span>
+                      </span>
+                    </div>
+
+                    {/* Topic Title */}
+                    <div>
+                      <h3 className="font-heading font-black text-base text-slate-900 line-clamp-2">
+                        {session.topic}
+                      </h3>
+                      {session.notes && (
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
+                          {session.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Host Info */}
+                    <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <img 
+                          src={session.mentorAvatar} 
+                          alt={session.mentorName} 
+                          className="w-10 h-10 rounded-xl object-cover ring-2 ring-purple-600/30"
+                        />
+                        <div>
+                          <span className="text-[10px] text-purple-700 font-bold uppercase tracking-wider block">
+                            Study Lead / Mentor
+                          </span>
+                          <h4 className="font-bold text-xs text-slate-900">{session.mentorName}</h4>
+                        </div>
+                      </div>
+
+                      <div className="text-right text-[11px] text-slate-500 font-medium">
+                        <span>{session.scheduledDate}</span>
+                        <p className="text-[10px] text-slate-400">{session.timeSlot}</p>
+                      </div>
+                    </div>
+
+                    {/* Enrolled Peers Strip */}
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                        Enrolled Classmates ({enrolled.length}/{max}):
+                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {enrolled.length === 0 ? (
+                          <span className="text-xs text-slate-400 italic">No classmates joined yet. Be the first!</span>
+                        ) : (
+                          enrolled.map((p, idx) => (
+                            <div key={idx} className="flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-xl text-[11px] text-slate-700 font-semibold" title={p.studentName}>
+                              <img src={p.studentAvatar} alt={p.studentName} className="w-5 h-5 rounded-full object-cover" />
+                              <span className="max-w-[100px] truncate">{p.studentName.split(' ')[0]}</span>
+                            </div>
+                          ))
+                        )}
+                        {!isFull && (
+                          <span className="px-2 py-1 rounded-xl border border-dashed border-slate-300 text-[10px] text-slate-400 font-bold">
+                            +{max - enrolled.length} open spots
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between gap-3">
+                    <div className="text-xs">
+                      <span className="text-slate-400 block text-[10px]">Fee per peer:</span>
+                      <strong className="text-slate-900 text-sm">2 Credits (₹0 Tuition)</strong>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* Live Meet Action */}
+                      {session.isLive ? (
+                        <button
+                          onClick={() => setActiveLiveMeetSession(session)}
+                          className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 animate-pulse cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Join Live Meet 🔴</span>
+                        </button>
+                      ) : isHost ? (
+                        <button
+                          onClick={() => toggleLiveMeet(session.id, true)}
+                          className="px-4 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                        >
+                          <Radio className="w-3.5 h-3.5" />
+                          <span>Start Live Teaching 🔴</span>
+                        </button>
+                      ) : isEnrolled ? (
+                        <button
+                          onClick={() => setActiveLiveMeetSession(session)}
+                          className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>Enrolled • Open Room</span>
+                        </button>
+                      ) : isFull ? (
+                        <button
+                          disabled
+                          className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 font-bold text-xs cursor-not-allowed"
+                        >
+                          Cohort Full ({max}/{max})
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => joinGroupSession(session.id)}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-indigo-500/25 transition-all cursor-pointer"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                          <span>Join Group (-2 Credits)</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB: LIVE CLASSROOMS & TEACHING MEETS */}
+      {/* ============================================================ */}
+      {activeTab === 'live' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-3xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-800">
+            <div className="space-y-1 max-w-xl">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+                <span className="text-xs font-black uppercase tracking-wider text-rose-400">
+                  Campus Live Video Network
+                </span>
+              </div>
+              <h2 className="text-2xl font-black text-white">Live Teaching Meets & Study Rooms</h2>
+              <p className="text-xs text-slate-300">
+                Join active interactive study sessions right now. Teachers can share screens, run code examples, and tutor 3-4 peers in real time.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setGroupTopic('');
+                setGroupNotes('');
+                setGroupStartLiveNow(true);
+                setHostGroupModalOpen(true);
+              }}
+              className="px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 cursor-pointer"
+            >
+              <Radio className="w-4 h-4 animate-pulse" />
+              <span>Go Live Now (Start Teaching)</span>
+            </button>
+          </div>
+
+          {liveSessions.length === 0 ? (
+            <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto ring-8 ring-rose-50/50">
+                <Radio className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-base font-extrabold text-slate-900">No Live Classrooms Streaming Right Now</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Be the first student to start an interactive live teaching stream or check upcoming group circles!
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setGroupTopic('');
+                  setGroupStartLiveNow(true);
+                  setHostGroupModalOpen(true);
+                }}
+                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+              >
+                Start a Live Teaching Room
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {liveSessions.map((session) => (
+                <div key={session.id} className="bg-white rounded-3xl p-6 border-2 border-rose-500 shadow-xl space-y-4 relative overflow-hidden flex flex-col justify-between">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="px-3 py-1 rounded-full bg-rose-600 text-white font-mono text-[10px] font-black uppercase flex items-center gap-1.5 shadow-sm">
+                        <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                        BROADCASTING LIVE
+                      </span>
+                      <span className="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg">
+                        {session.skillName}
+                      </span>
+                    </div>
+
+                    <h3 className="font-heading font-black text-lg text-slate-900">
+                      {session.topic}
+                    </h3>
+
+                    <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center gap-3">
+                      <img src={session.mentorAvatar} alt={session.mentorName} className="w-10 h-10 rounded-xl object-cover ring-2 ring-rose-500" />
+                      <div>
+                        <span className="font-bold text-xs text-slate-900 block">{session.mentorName}</span>
+                        <span className="text-[11px] text-slate-500">Live Host & Teacher</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <div className="text-xs text-slate-500">
+                      <span>Room Link: </span>
+                      <strong className="text-slate-800">Connected Sandbox</strong>
+                    </div>
+
+                    <button
+                      onClick={() => setActiveLiveMeetSession(session)}
+                      className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 animate-pulse cursor-pointer"
+                    >
+                      <Play className="w-4 h-4 fill-current" />
+                      <span>Enter Live Room</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ============================================================ */}
       {/* TAB 1: SMART MATCHES (CIRCULAR 3-WAY & DIRECT SWAPS) */}
@@ -891,20 +1253,38 @@ export const LearnTogetherPage: React.FC = () => {
                         </p>
                       </div>
 
-                      {/* Mutual Confirmation Mechanism */}
-                      <div className="flex items-center gap-2 shrink-0">
+                      {/* Live Meet & Mutual Confirmation Mechanism */}
+                      <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
+                        <button
+                          onClick={() => {
+                            if (!session.isLive && isMentor) {
+                              toggleLiveMeet(session.id, true);
+                            } else {
+                              setActiveLiveMeetSession(session);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+                            session.isLive 
+                              ? 'bg-rose-600 hover:bg-rose-500 text-white animate-pulse' 
+                              : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                          }`}
+                        >
+                          <Video className="w-3.5 h-3.5" />
+                          <span>{session.isLive ? 'Join Live Meet 🔴' : isMentor ? 'Start Live Meet' : 'Enter Live Meet'}</span>
+                        </button>
+
                         {confirmedByMe ? (
                           <span className="px-3 py-1.5 bg-emerald-50 text-emerald-800 font-bold rounded-xl border border-emerald-200 text-xs flex items-center gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>You Confirmed Completion</span>
+                            <span>Confirmed</span>
                           </span>
                         ) : (
                           <button
                             onClick={() => confirmSessionCompletion(session.id, myRole)}
-                            className="px-3.5 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-sm text-xs flex items-center gap-1.5"
+                            className="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-sm text-xs flex items-center gap-1.5 cursor-pointer"
                           >
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>Confirm Session Completed</span>
+                            <span>Complete</span>
                           </button>
                         )}
                       </div>
@@ -1069,6 +1449,192 @@ export const LearnTogetherPage: React.FC = () => {
         </div>
       )}
 
+      {/* ============================================================ */}
+      {/* HOST GROUP STUDY (3-4 PEERS) MODAL */}
+      {/* ============================================================ */}
+      {hostGroupModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-purple-100 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-900 font-black text-[10px] uppercase">
+                    Small Cohort (3-4 Students)
+                  </span>
+                  {groupStartLiveNow && (
+                    <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white font-mono text-[10px] font-bold uppercase animate-pulse">
+                      🔴 Live Now
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-black text-slate-900 mt-1">Host a Group Study Circle</h3>
+                <p className="text-xs text-slate-500">Collaborative learning with 3 to 4 student peers.</p>
+              </div>
+              <button 
+                onClick={() => setHostGroupModalOpen(false)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!groupTopic.trim()) return;
+                createGroupSession({
+                  topic: groupTopic.trim(),
+                  skillName: groupSkill,
+                  maxParticipants: groupMaxParticipants,
+                  scheduledDate: groupDate,
+                  timeSlot: groupTime,
+                  format: groupFormat,
+                  notes: groupNotes.trim(),
+                  startLiveImmediately: groupStartLiveNow
+                });
+                setHostGroupModalOpen(false);
+                setActiveTab(groupStartLiveNow ? 'live' : 'groups');
+              }}
+              className="space-y-4 text-xs"
+            >
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Study Topic / Workshop Title *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Neural Networks & PyTorch Tensor Deep Dive"
+                  value={groupTopic}
+                  onChange={(e) => setGroupTopic(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-600 font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Target Skill Category</label>
+                  <select
+                    value={groupSkill}
+                    onChange={(e) => setGroupSkill(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800"
+                  >
+                    {categories.filter(c => c !== 'All').map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Cohort Size (Peers)</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setGroupMaxParticipants(3)}
+                      className={`py-2 rounded-xl border font-bold text-xs transition-all cursor-pointer ${
+                        groupMaxParticipants === 3 
+                          ? 'border-purple-600 bg-purple-50 text-purple-950 shadow-xs' 
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      3 Peers
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setGroupMaxParticipants(4)}
+                      className={`py-2 rounded-xl border font-bold text-xs transition-all cursor-pointer ${
+                        groupMaxParticipants === 4 
+                          ? 'border-purple-600 bg-purple-50 text-purple-950 shadow-xs' 
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      4 Peers
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Start Live Immediately Toggle */}
+              <div className="p-3 bg-rose-50/80 rounded-2xl border border-rose-200 flex items-center justify-between">
+                <div>
+                  <span className="font-extrabold text-xs text-rose-950 flex items-center gap-1.5">
+                    <Radio className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+                    <span>Start Live Teaching Room Immediately</span>
+                  </span>
+                  <p className="text-[11px] text-rose-800/80">
+                    Launches interactive live video meet room right now.
+                  </p>
+                </div>
+                <input 
+                  type="checkbox"
+                  checked={groupStartLiveNow}
+                  onChange={(e) => setGroupStartLiveNow(e.target.checked)}
+                  className="w-4 h-4 accent-rose-600 rounded cursor-pointer"
+                />
+              </div>
+
+              {!groupStartLiveNow && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Scheduled Date</label>
+                    <input
+                      type="date"
+                      value={groupDate}
+                      onChange={(e) => setGroupDate(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Time Slot</label>
+                    <input
+                      type="text"
+                      value={groupTime}
+                      onChange={(e) => setGroupTime(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Meeting Format</label>
+                <select
+                  value={groupFormat}
+                  onChange={(e) => setGroupFormat(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white font-medium text-slate-800"
+                >
+                  <option value="Online Video">Online Video Room (Integrated Live Meet)</option>
+                  <option value="Campus In-Person">Campus In-Person (Tech Hub / Library Study Room)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 block mb-1">Session Agenda / Prerequisite Notes</label>
+                <textarea
+                  rows={2}
+                  value={groupNotes}
+                  onChange={(e) => setGroupNotes(e.target.value)}
+                  placeholder="Mention code libraries, laptops needed, topics covered..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs"
+                />
+              </div>
+
+              <div className="p-3 bg-purple-50 rounded-2xl border border-purple-100 flex items-center justify-between text-xs">
+                <span className="font-bold text-purple-900">Mentor Teaching Reward:</span>
+                <span className="font-black text-amber-600">+5 Learning Credits per Session</span>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-purple-700 via-indigo-600 to-indigo-700 hover:from-purple-800 hover:to-indigo-800 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                {groupStartLiveNow ? <Radio className="w-4 h-4 animate-pulse" /> : <Users2 className="w-4 h-4" />}
+                <span>{groupStartLiveNow ? 'Launch Live Teaching Room 🔴' : `Schedule Group Circle (${groupMaxParticipants} Peers)`}</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+

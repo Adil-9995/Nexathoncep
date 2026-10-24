@@ -251,8 +251,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block px-1">
                       Switch Student Profile
                     </span>
-                    <div className="space-y-1 text-xs">
-                      {allUsers.slice(0, 4).map(user => (
+                    <div className="space-y-1 text-xs max-h-52 overflow-y-auto pr-1">
+                      {allUsers.map(user => (
                         <button
                           key={user.id}
                           onClick={() => {
@@ -267,7 +267,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                         >
                           <div className="flex items-center gap-2">
                             <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-lg object-cover" />
-                            <span className="truncate max-w-[120px]">{user.name}</span>
+                            <span className="truncate max-w-[130px]">{user.name}</span>
                           </div>
                           <span className="text-[10px] text-slate-400 font-bold">{user.credits}c</span>
                         </button>

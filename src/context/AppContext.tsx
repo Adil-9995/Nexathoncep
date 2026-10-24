@@ -69,6 +69,22 @@ interface AppContextType {
   rejectSession: (sessionId: string) => void;
   confirmSessionCompletion: (sessionId: string, asRole: 'mentor' | 'learner') => void;
   updateSessionStatus: (sessionId: string, status: 'completed' | 'cancelled') => void;
+
+  // Group Learning (3-4 peers) & Live Meet
+  joinGroupSession: (sessionId: string) => { success: boolean; message?: string };
+  createGroupSession: (data: { 
+    topic: string; 
+    skillName: string; 
+    maxParticipants: number; 
+    scheduledDate: string; 
+    timeSlot: string; 
+    format: 'Online Video' | 'Campus In-Person'; 
+    notes?: string; 
+    startLiveImmediately?: boolean;
+  }) => { success: boolean; session?: LearningSession };
+  toggleLiveMeet: (sessionId: string, isLive: boolean) => void;
+  activeLiveMeetSession: LearningSession | null;
+  setActiveLiveMeetSession: (session: LearningSession | null) => void;
   
   // Book Transactions & Commission
   transactions: TransactionRecord[];
@@ -128,10 +144,20 @@ const STORAGE_PREFIX = 'nexathon_v2_';
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Users state
+  // Users state with automatic merging of new student personas
   const [allUsers, setAllUsers] = useState<StudentUser[]>(() => {
     const saved = localStorage.getItem(STORAGE_PREFIX + 'users');
-    return saved ? JSON.parse(saved) : SEED_USERS;
+    if (saved) {
+      try {
+        const parsed: StudentUser[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(u => u.id));
+        const missing = SEED_USERS.filter(u => !existingIds.has(u.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_USERS;
+      }
+    }
+    return SEED_USERS;
   });
 
   const [currentUserId, setCurrentUserId] = useState<string>(() => {
@@ -151,11 +177,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : ['book-1'];
   });
 
-  // Learning Sessions
+  // Learning Sessions with automatic merging of new group study circles
   const [learningSessions, setLearningSessions] = useState<LearningSession[]>(() => {
     const saved = localStorage.getItem(STORAGE_PREFIX + 'sessions');
-    return saved ? JSON.parse(saved) : SEED_SESSIONS;
+    if (saved) {
+      try {
+        const parsed: LearningSession[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(s => s.id));
+        const missing = SEED_SESSIONS.filter(s => !existingIds.has(s.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_SESSIONS;
+      }
+    }
+    return SEED_SESSIONS;
   });
+
+  // Active Live Meet Video Room Modal
+  const [activeLiveMeetSession, setActiveLiveMeetSession] = useState<LearningSession | null>(null);
 
   // Credit Transactions
   const [creditTransactions, setCreditTransactions] = useState<CreditTransaction[]>(() => {
@@ -638,6 +677,163 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // --- Group Learning (3-4 Peers) & Live Meet ---
+
+  const joinGroupSession = (sessionId: string): { success: boolean; message?: string } => {
+    const session = learningSessions.find(s => s.id === sessionId);
+    if (!session) return { success: false, message: 'Study group not found.' };
+
+    if (session.mentorId === currentUserId) {
+      return { success: false, message: 'You are the host/mentor of this group session!' };
+    }
+
+    const participants = session.enrolledParticipants || [];
+    if (participants.some(p => p.studentId === currentUserId)) {
+      return { success: false, message: 'You have already enrolled in this study group!' };
+    }
+
+    const max = session.maxParticipants || 4;
+    if (participants.length >= max) {
+      return { success: false, message: `This study group is full (maximum ${max} peers allowed).` };
+    }
+
+    if (currentUser.credits < 2) {
+      triggerCreditAlert({
+        type: 'error',
+        message: 'You need at least 2 credits to join this group study circle. Top up or teach to earn credits!'
+      });
+      return { success: false, message: 'You need at least 2 credits to join.' };
+    }
+
+    // Deduct 2 credits
+    setAllUsers(users => users.map(u => {
+      if (u.id === currentUser.id) {
+        return { ...u, credits: Math.max(0, u.credits - 2) };
+      }
+      return u;
+    }));
+
+    const deductTx: CreditTransaction = {
+      id: `ctx-group-${Date.now()}`,
+      userId: currentUser.id,
+      amount: -2,
+      type: 'spent_session',
+      description: `Joined Group Study Circle: "${session.topic}" with ${session.mentorName}`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      relatedEntityId: session.id
+    };
+    setCreditTransactions(prev => [deductTx, ...prev]);
+
+    const newParticipant = {
+      studentId: currentUser.id,
+      studentName: currentUser.name,
+      studentAvatar: currentUser.avatar,
+      role: 'learner' as const,
+      joinedAt: 'Just now'
+    };
+
+    setLearningSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        return {
+          ...s,
+          enrolledParticipants: [...(s.enrolledParticipants || []), newParticipant]
+        };
+      }
+      return s;
+    }));
+
+    // Notify mentor
+    const notif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      userId: session.mentorId,
+      title: 'New Student Joined Your Group Study!',
+      message: `${currentUser.name} joined "${session.topic}". Cohort now has ${(session.enrolledParticipants?.length || 0) + 1}/${max} peers.`,
+      timestamp: 'Just now',
+      read: false,
+      actionUrl: '#my-sessions',
+      type: 'session_request'
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    triggerCreditAlert({
+      type: 'deducted',
+      amount: 2,
+      message: `2 Credits deducted. Enrolled in "${session.topic}" (${participants.length + 1}/${max} peers)!`
+    });
+
+    return { success: true };
+  };
+
+  const createGroupSession = (data: { 
+    topic: string; 
+    skillName: string; 
+    maxParticipants: number; 
+    scheduledDate: string; 
+    timeSlot: string; 
+    format: 'Online Video' | 'Campus In-Person'; 
+    notes?: string; 
+    startLiveImmediately?: boolean;
+  }): { success: boolean; session?: LearningSession } => {
+    const newSession: LearningSession = {
+      id: `session-group-${Date.now()}`,
+      topic: data.topic,
+      skillName: data.skillName,
+      mentorId: currentUser.id,
+      mentorName: currentUser.name,
+      mentorAvatar: currentUser.avatar,
+      learnerId: 'group-cohort',
+      learnerName: `Cohort of ${data.maxParticipants} Students`,
+      learnerAvatar: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=250&q=80',
+      scheduledDate: data.startLiveImmediately ? 'Today (Live Teaching)' : data.scheduledDate,
+      timeSlot: data.startLiveImmediately ? 'Now Streaming' : data.timeSlot,
+      format: data.format,
+      status: 'upcoming',
+      creditsRequired: 2,
+      creditsTransferred: false,
+      confirmedByMentor: false,
+      confirmedByLearner: false,
+      notes: data.notes || `Interactive group study circle for ${data.maxParticipants} peers.`,
+      meetLink: `https://meet.nexathon.edu/room/${data.skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`,
+      sessionType: 'group',
+      maxParticipants: data.maxParticipants,
+      isLive: !!data.startLiveImmediately,
+      liveStartedAt: data.startLiveImmediately ? new Date().toISOString() : undefined,
+      enrolledParticipants: []
+    };
+
+    setLearningSessions(prev => [newSession, ...prev]);
+
+    triggerCreditAlert({
+      type: 'added',
+      amount: 0,
+      message: `Group study circle "${data.topic}" created (Max ${data.maxParticipants} peers)!`
+    });
+
+    if (data.startLiveImmediately) {
+      setActiveLiveMeetSession(newSession);
+    }
+
+    return { success: true, session: newSession };
+  };
+
+  const toggleLiveMeet = (sessionId: string, isLive: boolean) => {
+    setLearningSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        const updated = {
+          ...s,
+          isLive,
+          liveStartedAt: isLive ? new Date().toISOString() : undefined
+        };
+        if (isLive) {
+          setActiveLiveMeetSession(updated);
+        }
+        return updated;
+      }
+      return s;
+    }));
+  };
+
   // --- Book Marketplace ---
 
   const toggleFavourite = (bookId: string) => {
@@ -916,6 +1112,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       rejectSession,
       confirmSessionCompletion,
       updateSessionStatus,
+
+      // Group Learning & Live Meet
+      joinGroupSession,
+      createGroupSession,
+      toggleLiveMeet,
+      activeLiveMeetSession,
+      setActiveLiveMeetSession,
 
       // Transactions & Commission
       transactions,

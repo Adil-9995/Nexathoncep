@@ -6,6 +6,7 @@ import { FakePaymentModal } from './components/FakePaymentModal';
 import { EarnedCreditModal } from './components/EarnedCreditModal';
 import { AuthModal } from './components/AuthModal';
 import { CreditToast } from './components/CreditToast';
+import { LiveMeetModal } from './components/LiveMeetModal';
 
 import { HomePage } from './pages/HomePage';
 import { MarketplacePage } from './pages/MarketplacePage';
@@ -15,8 +16,40 @@ import { DashboardPage } from './pages/DashboardPage';
 import { AdminPage } from './pages/AdminPage';
 
 const MainAppContent: React.FC = () => {
-  const [currentTab, setCurrentTab] = useState<string>('home');
+  const getInitialTab = (): string => {
+    const hash = window.location.hash.replace('#', '').toLowerCase();
+    if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(hash)) {
+      return hash;
+    }
+    const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+    if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(path)) {
+      return path;
+    }
+    return 'home';
+  };
+
+  const [currentTab, setCurrentTabState] = useState<string>(getInitialTab);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const setCurrentTab = (tab: string) => {
+    setCurrentTabState(tab);
+    window.location.hash = tab;
+  };
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(hash)) {
+        setCurrentTabState(hash);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-purple-100 selection:text-purple-900">
@@ -54,6 +87,9 @@ const MainAppContent: React.FC = () => {
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
       />
+
+      {/* Live Meet Video Classroom Modal */}
+      <LiveMeetModal />
 
       {/* Site-wide Footer */}
       <Footer />

@@ -108,6 +108,136 @@ export const SEED_USERS: StudentUser[] = [
     role: 'student',
   },
   {
+    id: 'user-ann-mary',
+    name: 'Ann Mary Terrance Paul',
+    email: 'annmary.tp@nexathon.edu',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+    institution: 'National Institute of Technology',
+    course: 'B.Tech Artificial Intelligence & Data Science',
+    department: 'Department of AI & Machine Learning',
+    academicYear: '3rd Year',
+    isVerified: true,
+    verificationStatus: 'verified',
+    skillsCanTeach: [
+      { name: 'Machine Learning', level: 'Advanced', category: 'Data Science', description: 'Supervised learning, neural nets, Scikit-Learn, PyTorch basics' },
+      { name: 'Python Data Analysis', level: 'Advanced', category: 'Programming', description: 'Pandas, NumPy, data cleaning, Seaborn visualization' }
+    ],
+    skillsWantToLearn: [
+      { name: 'Cloud Deployment', level: 'Beginner', category: 'DevOps', description: 'AWS EC2, Docker containers and microservices' },
+      { name: 'UI/UX Design', level: 'Beginner', category: 'UI/UX Design', description: 'Figma wireframes for data dashboard products' }
+    ],
+    preferredFormat: 'Online',
+    availableDays: ['Monday', 'Wednesday', 'Friday', 'Saturday'],
+    availableTimeSlots: ['Evening (6 PM - 9 PM)', 'Weekend Afternoons'],
+    bio: 'AI & Data Science researcher hosting group study circles on neural networks and predictive modeling. Happy to teach Python ML!',
+    credits: 8,
+    unlockedTeacherIds: ['user-adil'],
+    completedSessionsCount: 7,
+    itemsReusedCount: 4,
+    moneySaved: 3600,
+    earnings: 2800,
+    rating: 4.96,
+    reviewsCount: 14,
+    role: 'student',
+  },
+  {
+    id: 'user-abiya',
+    name: 'Abiya Daniel',
+    email: 'abiya.d@nexathon.edu',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
+    institution: 'National Institute of Technology',
+    course: 'B.Tech Electronics & Communication',
+    department: 'Department of ECE',
+    academicYear: '3rd Year',
+    isVerified: true,
+    verificationStatus: 'verified',
+    skillsCanTeach: [
+      { name: 'Embedded Systems', level: 'Advanced', category: 'Hardware', description: 'Microcontroller programming, GPIO, timers, UART & FreeRTOS' },
+      { name: 'Internet of Things (IoT)', level: 'Advanced', category: 'Electronics', description: 'ESP32, MQTT protocols, cloud sensor dashboards & Node-RED' }
+    ],
+    skillsWantToLearn: [
+      { name: 'Flutter', level: 'Beginner', category: 'Mobile Dev', description: 'Companion mobile app for IoT connected devices' },
+      { name: 'Figma', level: 'Beginner', category: 'UI/UX Design', description: 'Hardware companion app UX flows' }
+    ],
+    preferredFormat: 'Hybrid',
+    availableDays: ['Tuesday', 'Thursday', 'Saturday'],
+    availableTimeSlots: ['Afternoon (2 PM - 5 PM)', 'Evening (6 PM - 8 PM)'],
+    bio: 'Hardware geek building connected smart sensor nodes. Passionate about IoT labs, Arduino, and embedded firmware circles.',
+    credits: 6,
+    unlockedTeacherIds: [],
+    completedSessionsCount: 5,
+    itemsReusedCount: 3,
+    moneySaved: 2900,
+    earnings: 2100,
+    rating: 4.92,
+    reviewsCount: 9,
+    role: 'student',
+  },
+  {
+    id: 'user-anjali',
+    name: 'Anjali T Paul',
+    email: 'anjali.tp@nexathon.edu',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+    institution: 'National Institute of Technology',
+    course: 'B.Tech Computer Science & Cyber Security',
+    department: 'School of Computing',
+    academicYear: '4th Year',
+    isVerified: true,
+    verificationStatus: 'verified',
+    skillsCanTeach: [
+      { name: 'Network Security', level: 'Advanced', category: 'Cyber Security', description: 'Packet analysis with Wireshark, firewalls, cryptographic handshakes' },
+      { name: 'Ethical Hacking & Web Sec', level: 'Advanced', category: 'Cyber Security', description: 'OWASP Top 10 vulnerabilities, SQL injection, Burp Suite testing' }
+    ],
+    skillsWantToLearn: [
+      { name: 'Kubernetes', level: 'Beginner', category: 'DevOps', description: 'Container security & orchestration hardening' }
+    ],
+    preferredFormat: 'Online',
+    availableDays: ['Monday', 'Wednesday', 'Thursday', 'Sunday'],
+    availableTimeSlots: ['Evening (7 PM - 9 PM)'],
+    bio: 'Cyber security enthusiast & CTF player. Leading peer cohorts on ethical web security audits and network defense protocols.',
+    credits: 12,
+    unlockedTeacherIds: ['user-anu'],
+    completedSessionsCount: 11,
+    itemsReusedCount: 6,
+    moneySaved: 5200,
+    earnings: 4100,
+    rating: 4.98,
+    reviewsCount: 18,
+    role: 'student',
+  },
+  {
+    id: 'user-amal',
+    name: 'Amal Dev A',
+    email: 'amal.dev@nexathon.edu',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+    institution: 'National Institute of Technology',
+    course: 'B.Tech Mechanical & Mechatronics',
+    department: 'Department of Mechanical Engineering',
+    academicYear: '3rd Year',
+    isVerified: true,
+    verificationStatus: 'verified',
+    skillsCanTeach: [
+      { name: 'CAD Modeling & SolidWorks', level: 'Advanced', category: 'Engineering', description: '3D parametric modeling, assembly constraints, generative design & 3D print slicing' },
+      { name: 'Robotics & Arduino', level: 'Intermediate', category: 'Robotics', description: 'Servo control, kinematics and robotic arm fabrication' }
+    ],
+    skillsWantToLearn: [
+      { name: 'Python', level: 'Beginner', category: 'Programming', description: 'Python scripting for automated CAD geometric calculations' }
+    ],
+    preferredFormat: 'Hybrid',
+    availableDays: ['Tuesday', 'Friday', 'Saturday'],
+    availableTimeSlots: ['Morning (10 AM - 1 PM)', 'Evening (5 PM - 7 PM)'],
+    bio: 'Mechatronics designer passionate about 3D CAD fabrication, robotics, and peer product design study groups.',
+    credits: 7,
+    unlockedTeacherIds: [],
+    completedSessionsCount: 6,
+    itemsReusedCount: 5,
+    moneySaved: 3800,
+    earnings: 2600,
+    rating: 4.91,
+    reviewsCount: 11,
+    role: 'student',
+  },
+  {
     id: 'user-admin',
     name: 'Prof. Suresh Kumar (Admin)',
     email: 'moderator@nexathon.edu',
@@ -304,6 +434,126 @@ export const SEED_BOOKS: BookListing[] = [
 
 export const SEED_SESSIONS: LearningSession[] = [
   {
+    id: 'session-live-group-1',
+    topic: 'Hands-on Neural Networks & Model Training Study Circle',
+    skillName: 'Machine Learning',
+    mentorId: 'user-ann-mary',
+    mentorName: 'Ann Mary Terrance Paul',
+    mentorAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+    learnerId: 'user-abiya',
+    learnerName: 'Abiya Daniel',
+    learnerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
+    scheduledDate: 'Today (Live Teaching)',
+    timeSlot: 'Now Streaming',
+    format: 'Online Video',
+    status: 'upcoming',
+    creditsRequired: 2,
+    creditsTransferred: false,
+    confirmedByMentor: false,
+    confirmedByLearner: false,
+    notes: 'Interactive code walkthrough of backpropagation and PyTorch tensors with 4 peers.',
+    meetLink: 'https://meet.nexathon.edu/room/ai-ml-group-4',
+    sessionType: 'group',
+    maxParticipants: 4,
+    isLive: true,
+    enrolledParticipants: [
+      {
+        studentId: 'user-abiya',
+        studentName: 'Abiya Daniel',
+        studentAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: 'Today, 6:00 PM'
+      },
+      {
+        studentId: 'user-amal',
+        studentName: 'Amal Dev A',
+        studentAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: 'Today, 6:05 PM'
+      },
+      {
+        studentId: 'user-anjali',
+        studentName: 'Anjali T Paul',
+        studentAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: 'Today, 6:10 PM'
+      }
+    ]
+  },
+  {
+    id: 'session-group-iot-2',
+    topic: 'IoT Sensor Prototyping & ESP32 Firmware Study Group',
+    skillName: 'Internet of Things (IoT)',
+    mentorId: 'user-abiya',
+    mentorName: 'Abiya Daniel',
+    mentorAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=250&q=80',
+    learnerId: 'user-amal',
+    learnerName: 'Amal Dev A',
+    learnerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+    scheduledDate: '2026-10-29',
+    timeSlot: '4:30 PM - 6:00 PM',
+    format: 'Online Video',
+    status: 'upcoming',
+    creditsRequired: 2,
+    creditsTransferred: false,
+    confirmedByMentor: false,
+    confirmedByLearner: false,
+    notes: 'Connecting temperature and vibration sensors to MQTT brokers with Arduino IDE.',
+    meetLink: 'https://meet.nexathon.edu/room/iot-lab-group-4',
+    sessionType: 'group',
+    maxParticipants: 4,
+    isLive: false,
+    enrolledParticipants: [
+      {
+        studentId: 'user-amal',
+        studentName: 'Amal Dev A',
+        studentAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: '2026-10-23'
+      },
+      {
+        studentId: 'user-adil',
+        studentName: 'Adil Hassan',
+        studentAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: '2026-10-24'
+      }
+    ]
+  },
+  {
+    id: 'session-group-sec-3',
+    topic: 'Web App Penetration Testing & OWASP Top 10 Cohort',
+    skillName: 'Ethical Hacking & Web Sec',
+    mentorId: 'user-anjali',
+    mentorName: 'Anjali T Paul',
+    mentorAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=250&q=80',
+    learnerId: 'user-ann-mary',
+    learnerName: 'Ann Mary Terrance Paul',
+    learnerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+    scheduledDate: '2026-10-30',
+    timeSlot: '7:00 PM - 8:30 PM',
+    format: 'Online Video',
+    status: 'upcoming',
+    creditsRequired: 2,
+    creditsTransferred: false,
+    confirmedByMentor: false,
+    confirmedByLearner: false,
+    notes: 'Live Burp Suite intercepting walkthrough, SQL injection defense, and JWT security for a cohort of 3.',
+    meetLink: 'https://meet.nexathon.edu/room/cybersec-study-3',
+    sessionType: 'group',
+    maxParticipants: 3,
+    isLive: false,
+    enrolledParticipants: [
+      {
+        studentId: 'user-ann-mary',
+        studentName: 'Ann Mary Terrance Paul',
+        studentAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: '2026-10-24'
+      }
+    ]
+  },
+  {
     id: 'session-demo-1',
     topic: 'Figma Auto-Layout & Design Tokens for Developers',
     skillName: 'Figma',
@@ -316,12 +566,16 @@ export const SEED_SESSIONS: LearningSession[] = [
     scheduledDate: '2026-10-27',
     timeSlot: '6:00 PM - 7:00 PM',
     format: 'Online Video',
-    status: 'pending', // Demo step 2-4: Adil accepts and confirms!
-    creditsRequired: 5,
+    status: 'pending',
+    creditsRequired: 2,
     creditsTransferred: false,
     confirmedByMentor: false,
     confirmedByLearner: false,
-    notes: 'Anu requested 1-on-1 coaching to turn backend mental models into modern Figma frames.'
+    notes: 'Anu requested 1-on-1 coaching to turn backend mental models into modern Figma frames.',
+    meetLink: 'https://meet.nexathon.edu/room/figma-tokens-1on1',
+    sessionType: '1-on-1',
+    maxParticipants: 2,
+    isLive: false
   },
   {
     id: 'session-demo-2',
@@ -337,11 +591,14 @@ export const SEED_SESSIONS: LearningSession[] = [
     timeSlot: '5:00 PM - 6:00 PM',
     format: 'Campus In-Person',
     status: 'upcoming',
-    creditsRequired: 5,
+    creditsRequired: 2,
     creditsTransferred: false,
     confirmedByMentor: false,
     confirmedByLearner: false,
-    notes: 'Meeting at Central Campus Tech Hub Room 204.'
+    notes: 'Meeting at Central Campus Tech Hub Room 204.',
+    sessionType: '1-on-1',
+    maxParticipants: 2,
+    isLive: false
   },
   {
     id: 'session-demo-3',
@@ -357,11 +614,14 @@ export const SEED_SESSIONS: LearningSession[] = [
     timeSlot: '7:00 PM - 8:00 PM',
     format: 'Online Video',
     status: 'completed',
-    creditsRequired: 5,
+    creditsRequired: 2,
     creditsTransferred: true,
     confirmedByMentor: true,
     confirmedByLearner: true,
-    notes: 'Both verified completion! Anju received 5 learning credits.'
+    notes: 'Both verified completion! Anju received 5 learning credits.',
+    sessionType: '1-on-1',
+    maxParticipants: 2,
+    isLive: false
   }
 ];
 

@@ -88,17 +88,21 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           </div>
 
           {/* Micro-payment & Credit highlight tag */}
-          <div className="pt-3 flex flex-wrap items-center justify-center gap-4 text-xs text-indigo-200/90 font-semibold">
+          <div className="pt-3 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs text-indigo-200/90 font-semibold">
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               100% Free Peer Learning
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-              <Zap className="w-4 h-4 text-amber-300 fill-current shrink-0" />
-              5 Credits for ₹10 Match Pass
+              <Users className="w-4 h-4 text-indigo-300 shrink-0" />
+              Group Study (3-4 Peers)
+            </span>
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-200">
+              <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping shrink-0" />
+              Live Classroom Meets
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10">
-              <Coins className="w-4 h-4 text-purple-300 fill-current shrink-0" />
+              <Coins className="w-4 h-4 text-amber-300 fill-current shrink-0" />
               Earn 5 Credits When You Teach
             </span>
           </div>
