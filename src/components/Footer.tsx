@@ -24,11 +24,11 @@ export const Footer: React.FC = () => {
                 <GraduationCap className="w-5 h-5 text-amber-300" />
               </div>
               <span className="font-black text-lg text-white tracking-tight">
-                Nexa<span className="text-purple-400">thon</span>
+                Campus<span className="text-purple-400">Loop</span>
               </span>
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              <strong>“Learn One Skill. Teach Another. Grow Together.”</strong> A student-powered circular learning economy & second-hand book marketplace.
+              <strong>“Learn One Skill. Teach Another. Grow Together.”</strong> A student-powered circular learning economy, second-hand book & digital notes marketplace, and writing services hub.
             </p>
             <div className="flex items-center gap-2 text-[10px] text-amber-300 font-bold bg-purple-950/80 px-2.5 py-1 rounded-lg border border-purple-800/60 inline-flex">
               <Sparkles className="w-3.5 h-3.5 fill-current" />
@@ -50,17 +50,17 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Book Marketplace */}
+          {/* Book & Writing Marketplace */}
           <div className="space-y-2">
             <h4 className="font-extrabold text-white text-xs uppercase tracking-wider">
-              Book Marketplace
+              Marketplace & Gigs
             </h4>
             <ul className="space-y-1.5 text-[11px]">
               <li>Second-Hand Educational Books</li>
+              <li>Digital PDF Study Notes</li>
+              <li>Lab Record & Assignment Writing</li>
+              <li>₹10 Advance Escrow Protection</li>
               <li>Transparent 2% Platform Commission</li>
-              <li>Simulated Escrow Sandbox</li>
-              <li>Sell Your College Books</li>
-              <li>Academic Material Verification</li>
             </ul>
           </div>
 
@@ -74,7 +74,7 @@ export const Footer: React.FC = () => {
               <li>Dual Session Mutual Confirmation</li>
               <li>Faculty Moderator Escalation</li>
               <li>Non-Cash Credit Isolation</li>
-              <li>Zero Piracy & Exam Leak Moderation</li>
+              <li>Zero Piracy & Academic Integrity</li>
             </ul>
           </div>
 
@@ -83,7 +83,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
           <div className="flex items-center gap-1">
-            <span>&copy; {new Date().getFullYear()} Nexathon Education Platform. Built for Student Knowledge Exchange.</span>
+            <span>&copy; {new Date().getFullYear()} CampusLoop Education Platform. Built for Student Knowledge Exchange.</span>
           </div>
 
           <div className="flex items-center gap-4 text-[10px]">

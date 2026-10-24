@@ -49,7 +49,7 @@ export interface StudentUser {
   availableDays: string[];
   availableTimeSlots: string[];
   bio: string;
-  credits: number; // Nexathon Learning Credits (5 credits earned per teaching session, 2 needed to unlock match)
+  credits: number; // CampusLoop Learning Credits (5 credits earned per teaching session, 2 needed to unlock match)
   unlockedTeacherIds: string[]; // Teacher matches unlocked by this student
   completedSessionsCount: number;
   itemsReusedCount: number;
@@ -141,9 +141,98 @@ export interface MarketplaceListing {
   favouritesCount: number;
   tags: string[];
   isDemo?: boolean;
+
+  // Digital PDF Notes extensions
+  itemFormat?: 'physical' | 'pdf';
+  pdfPageCount?: number;
+  pdfFileSize?: string;
+  pdfSampleUrl?: string;
 }
 
 export type BookListing = MarketplaceListing;
+
+export type WritingServiceType = 
+  | 'Lab Record Writing'
+  | 'Assignment Writing'
+  | 'Observation Notebook'
+  | 'Project Report / Paper'
+  | 'Diagrams & Engineering Graphs';
+
+export interface WritingGigListing {
+  id: string;
+  writerId: string;
+  writerName: string;
+  writerAvatar: string;
+  writerCollege: string;
+  writerRating: number;
+  reviewsCount: number;
+  title: string;
+  serviceType: WritingServiceType;
+  pricingModel: 'per_page' | 'per_record' | 'fixed';
+  rate: number; // in INR
+  turnaroundDays: number;
+  handwritingSample: string;
+  languages: string[];
+  description: string;
+  completedJobsCount: number;
+  isAvailable: boolean;
+  datePosted: string;
+}
+
+export interface WritingJobAnnouncement {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  requesterAvatar: string;
+  requesterCollege: string;
+  title: string;
+  category: WritingServiceType;
+  subject: string;
+  pagesCount: number;
+  deadline: string;
+  budget: number; // in INR
+  instructions: string;
+  status: 'open' | 'assigned' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
+  assignedWriterId?: string;
+  assignedWriterName?: string;
+  createdAt: string;
+}
+
+export interface WritingOrder {
+  id: string;
+  orderNumber: string;
+  gigId?: string;
+  announcementId?: string;
+  title: string;
+  category: WritingServiceType;
+  requesterId: string;
+  requesterName: string;
+  requesterCollege: string;
+  writerId: string;
+  writerName: string;
+  writerAvatar: string;
+  writerCollege: string;
+  totalAmount: number;
+  advanceAmount: number; // Always 10 INR as required
+  remainingAmount: number; // totalAmount - 10
+  platformFeeRate: number; // 0.02 (2% to app)
+  platformFee: number; // 2% of totalAmount
+  writerPayout: number; // remaining/total - platformFee
+  advancePaid: boolean;
+  advancePaidAt?: string;
+  materialsSubmitted: boolean;
+  workInstructions?: string;
+  workSubmitted: boolean;
+  workSubmittedAt?: string;
+  workSubmissionNotes?: string;
+  workSampleImages?: string[];
+  finalPaid: boolean;
+  finalPaidAt?: string;
+  status: 'advance_pending' | 'in_progress' | 'submitted_for_review' | 'completed' | 'cancelled';
+  pagesCount: number;
+  deadline: string;
+  createdAt: string;
+}
 
 export interface TransactionRecord {
   id: string;

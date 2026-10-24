@@ -96,7 +96,7 @@ export const FakePaymentModal: React.FC = () => {
               </div>
               <h4 className="text-xl font-black text-slate-900">Payment Simulated Successfully!</h4>
               <p className="text-xs text-slate-600 max-w-sm mx-auto">
-                ₹10 simulated fee processed. <strong>5 Learning Credits</strong> have been added to your Nexathon wallet.
+                ₹10 simulated fee processed. <strong>5 Learning Credits</strong> have been added to your CampusLoop wallet.
               </p>
               {targetTeacher && (
                 <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200 text-xs text-purple-900 font-semibold">
@@ -207,7 +207,7 @@ export const FakePaymentModal: React.FC = () => {
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-2">
                   <div className="w-32 h-32 mx-auto bg-white p-2 rounded-xl shadow-inner border border-slate-200 flex items-center justify-center">
                     <img 
-                      src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=nexathon@sandbox&pn=NexathonMatch&am=10&cu=INR" 
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=campusloop@sandbox&pn=CampusLoopMatch&am=10&cu=INR" 
                       alt="UPI QR Code for ₹10" 
                       className="w-full h-full"
                     />

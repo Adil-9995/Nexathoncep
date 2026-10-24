@@ -71,7 +71,7 @@ export const LiveMeetModal: React.FC = () => {
   };
 
   const handleCopyLink = () => {
-    const link = session.meetLink || `https://meet.nexathon.edu/room/${session.id}`;
+    const link = session.meetLink || `https://meet.campusloop.edu/room/${session.id}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);

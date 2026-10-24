@@ -1,6 +1,7 @@
 -- ==============================================================================
--- NEXATHON DATABASE SCHEMA (PostgreSQL / Supabase)
--- Full-stack Peer-to-Peer Learning & Second-Hand Book Marketplace
+-- CAMPUSLOOP DATABASE SCHEMA (PostgreSQL / Supabase)
+-- Full-stack Peer-to-Peer Learning, Book & Digital PDF Notes Marketplace,
+-- and Student Writing Gigs & Escrow Platform
 -- Tagline: "Learn One Skill. Teach Another. Grow Together."
 -- ==============================================================================
 
@@ -111,7 +112,7 @@ CREATE TABLE IF NOT EXISTS public.learning_sessions (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 8. Book Listings (Educational Second-Hand Textbooks)
+-- 8. Book & Digital Notes Listings (Second-Hand Textbooks & Curated PDF Notes)
 CREATE TABLE IF NOT EXISTS public.book_listings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     seller_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -123,7 +124,11 @@ CREATE TABLE IF NOT EXISTS public.book_listings (
     category TEXT NOT NULL,
     price NUMERIC(10,2) NOT NULL DEFAULT 0,
     original_reference_price NUMERIC(10,2) NOT NULL DEFAULT 0,
-    condition TEXT CHECK (condition IN ('New', 'Like New', 'Good', 'Fair')) NOT NULL,
+    condition TEXT CHECK (condition IN ('New', 'Like New', 'Good', 'Fair')) NOT NULL DEFAULT 'Like New',
+    item_format TEXT CHECK (item_format IN ('physical', 'pdf')) DEFAULT 'physical',
+    pdf_page_count INT,
+    pdf_file_size TEXT,
+    pdf_sample_url TEXT,
     images TEXT[] DEFAULT '{}',
     status TEXT CHECK (status IN ('Available', 'Reserved', 'Sold')) DEFAULT 'Available',
     views INT DEFAULT 0,
@@ -184,6 +189,86 @@ CREATE TABLE IF NOT EXISTS public.notifications (
         'session_request', 'session_accepted', 'session_completed', 'credits_earned', 'credits_spent', 'book_order', 'system'
     )) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 13. Student Writing Gigs (Students offering record & assignment writing)
+CREATE TABLE IF NOT EXISTS public.writing_gigs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    writer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    service_type TEXT CHECK (service_type IN (
+        'Lab Record Writing',
+        'Assignment Writing',
+        'Observation Notebook',
+        'Project Report / Paper',
+        'Diagrams & Engineering Graphs'
+    )) NOT NULL,
+    pricing_model TEXT CHECK (pricing_model IN ('per_page', 'per_record', 'fixed')) NOT NULL DEFAULT 'per_record',
+    rate NUMERIC(10,2) NOT NULL DEFAULT 120.00,
+    turnaround_days INT NOT NULL DEFAULT 2,
+    handwriting_sample TEXT,
+    languages TEXT[] DEFAULT '{"English"}',
+    description TEXT NOT NULL,
+    completed_jobs_count INT DEFAULT 0,
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 14. Writing Job Announcements (Students posting works to be written)
+CREATE TABLE IF NOT EXISTS public.writing_job_announcements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    requester_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    category TEXT CHECK (category IN (
+        'Lab Record Writing',
+        'Assignment Writing',
+        'Observation Notebook',
+        'Project Report / Paper',
+        'Diagrams & Engineering Graphs'
+    )) NOT NULL,
+    subject TEXT NOT NULL,
+    pages_count INT NOT NULL DEFAULT 10,
+    deadline TEXT NOT NULL,
+    budget NUMERIC(10,2) NOT NULL DEFAULT 150.00,
+    instructions TEXT NOT NULL,
+    status TEXT CHECK (status IN ('open', 'assigned', 'in_progress', 'submitted', 'completed', 'cancelled')) DEFAULT 'open',
+    assigned_writer_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 15. Writing Orders & Escrow (₹10 Advance Deposit, 2% Platform Fee, 98% Writer Payout)
+CREATE TABLE IF NOT EXISTS public.writing_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    order_number TEXT UNIQUE NOT NULL,
+    gig_id UUID REFERENCES public.writing_gigs(id) ON DELETE SET NULL,
+    announcement_id UUID REFERENCES public.writing_job_announcements(id) ON DELETE SET NULL,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    requester_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    writer_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+    total_amount NUMERIC(10,2) NOT NULL,
+    advance_amount NUMERIC(10,2) NOT NULL DEFAULT 10.00, -- Strictly ₹10 advance deposit to lock writer
+    remaining_amount NUMERIC(10,2) NOT NULL,            -- total_amount - advance_amount
+    platform_fee_rate NUMERIC(4,3) DEFAULT 0.020,       -- 2% platform fee
+    platform_fee NUMERIC(10,2) NOT NULL,                -- 2% of total_amount to app
+    writer_payout NUMERIC(10,2) NOT NULL,               -- 98% of total_amount to writer
+    advance_paid BOOLEAN DEFAULT TRUE,
+    advance_paid_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    materials_submitted BOOLEAN DEFAULT TRUE,
+    work_instructions TEXT,
+    work_submitted BOOLEAN DEFAULT FALSE,
+    work_submitted_at TIMESTAMP WITH TIME ZONE,
+    work_submission_notes TEXT,
+    work_sample_images TEXT[] DEFAULT '{}',
+    final_paid BOOLEAN DEFAULT FALSE,
+    final_paid_at TIMESTAMP WITH TIME ZONE,
+    status TEXT CHECK (status IN ('advance_pending', 'in_progress', 'submitted_for_review', 'completed', 'cancelled')) DEFAULT 'in_progress',
+    pages_count INT DEFAULT 1,
+    deadline TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ==============================================================================
@@ -258,3 +343,18 @@ CREATE POLICY "Book listings viewable by everyone" ON public.book_listings FOR S
 CREATE POLICY "Sellers can manage own book listings" ON public.book_listings FOR ALL USING (auth.uid() = (SELECT user_id FROM public.profiles WHERE id = seller_id));
 
 CREATE POLICY "Wallets viewable by owner" ON public.credit_wallets FOR SELECT USING (auth.uid() = (SELECT user_id FROM public.profiles WHERE id = profile_id));
+
+ALTER TABLE public.writing_gigs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.writing_job_announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.writing_orders ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Writing gigs viewable by everyone" ON public.writing_gigs FOR SELECT USING (true);
+CREATE POLICY "Writers can manage own gigs" ON public.writing_gigs FOR ALL USING (auth.uid() = (SELECT user_id FROM public.profiles WHERE id = writer_id));
+
+CREATE POLICY "Announcements viewable by everyone" ON public.writing_job_announcements FOR SELECT USING (true);
+CREATE POLICY "Requesters can manage own announcements" ON public.writing_job_announcements FOR ALL USING (auth.uid() = (SELECT user_id FROM public.profiles WHERE id = requester_id));
+
+CREATE POLICY "Orders viewable by requester or writer" ON public.writing_orders FOR SELECT USING (
+    auth.uid() = (SELECT user_id FROM public.profiles WHERE id = requester_id) OR
+    auth.uid() = (SELECT user_id FROM public.profiles WHERE id = writer_id)
+);

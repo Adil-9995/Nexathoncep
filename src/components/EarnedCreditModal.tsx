@@ -46,7 +46,7 @@ export const EarnedCreditModal: React.FC<EarnedCreditModalProps> = ({ onNavigate
         {/* Modal Content */}
         <div className="p-6 space-y-5">
           <p className="text-xs text-slate-600 leading-relaxed">
-            Congratulations <strong>{currentUser.name}</strong>! Your student peer verified that you successfully taught them. <strong>+5 Learning Credits</strong> have been added to your Nexathon wallet (Current balance: <strong>{currentUser.credits} Credits</strong>).
+            Congratulations <strong>{currentUser.name}</strong>! Your student peer verified that you successfully taught them. <strong>+5 Learning Credits</strong> have been added to your CampusLoop wallet (Current balance: <strong>{currentUser.credits} Credits</strong>).
           </p>
 
           <div className="p-3 bg-purple-50 rounded-2xl border border-purple-100 flex items-center justify-around text-xs">

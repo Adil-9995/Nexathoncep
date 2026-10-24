@@ -13,7 +13,8 @@ import {
   X,
   Plus,
   Repeat,
-  UserCheck
+  UserCheck,
+  PenTool
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -45,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
     { id: 'home', label: 'Home', icon: Repeat },
     { id: 'learn', label: 'Explore Skills', icon: GraduationCap },
     { id: 'marketplace', label: 'Book Marketplace', icon: BookOpen },
+    { id: 'writing', label: 'Writing Gigs', icon: PenTool, badge: 'Escrow' },
     { id: 'credits', label: 'Credit Wallet', icon: Coins },
   ];
 
@@ -72,10 +74,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
             </div>
             <div>
               <span className="font-heading font-black text-xl text-slate-900 tracking-tight">
-                Nexa<span className="text-purple-700">thon</span>
+                Campus<span className="text-purple-700">Loop</span>
               </span>
               <p className="text-[10px] text-slate-500 font-medium tracking-tight -mt-0.5">
-                Campus Skill & Book Exchange
+                Learn One Skill. Teach Another. Grow Together.
               </p>
             </div>
           </div>
@@ -98,6 +100,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 >
                   <Icon className={`w-4 h-4 ${isActive ? 'text-purple-700' : 'text-slate-400'}`} />
                   <span>{item.label}</span>
+                  {item.badge && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -347,6 +354,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                       <Icon className={`w-4 h-4 ${isActive ? 'text-purple-700' : 'text-slate-400'}`} />
                       <span>{item.label}</span>
                     </div>
+                    {item.badge && (
+                      <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs">
+                        {item.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}

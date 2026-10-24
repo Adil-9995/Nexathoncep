@@ -105,11 +105,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <div className="flex items-center gap-2 mb-1">
             <GraduationCap className="w-5 h-5 text-amber-300" />
-            <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Nexathon Student Portal</span>
+            <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">CampusLoop Student Portal</span>
           </div>
 
           <h3 className="text-2xl font-black text-white tracking-tight">
-            {mode === 'demo' ? 'Quick Demo Persona Switcher' : mode === 'signup' ? 'Join Nexathon' : 'Student Login'}
+            {mode === 'demo' ? 'Quick Demo Persona Switcher' : mode === 'signup' ? 'Join CampusLoop' : 'Student Login'}
           </h3>
           <p className="text-xs text-indigo-100 mt-1">
             {mode === 'demo' 
@@ -282,7 +282,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <label className="text-[11px] font-bold text-slate-700 block mb-1">College Email</label>
                 <input
                   type="email"
-                  defaultValue="adil.h@nexathon.edu"
+                  defaultValue="adil.h@campusloop.edu"
                   className="w-full px-3 py-2 rounded-xl border border-slate-300"
                 />
               </div>

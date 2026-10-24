@@ -14,15 +14,18 @@ import { LearnTogetherPage } from './pages/LearnTogetherPage';
 import { MyCreditsPage } from './pages/MyCreditsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { AdminPage } from './pages/AdminPage';
+import { WritingGigsPage } from './pages/WritingGigsPage';
 
 const MainAppContent: React.FC = () => {
+  const validTabs = ['home', 'learn', 'marketplace', 'writing', 'credits', 'dashboard', 'admin'];
+
   const getInitialTab = (): string => {
     const hash = window.location.hash.replace('#', '').toLowerCase();
-    if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(hash)) {
+    if (validTabs.includes(hash)) {
       return hash;
     }
     const path = window.location.pathname.replace(/^\//, '').toLowerCase();
-    if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(path)) {
+    if (validTabs.includes(path)) {
       return path;
     }
     return 'home';
@@ -39,7 +42,7 @@ const MainAppContent: React.FC = () => {
   React.useEffect(() => {
     const handlePopState = () => {
       const hash = window.location.hash.replace('#', '').toLowerCase();
-      if (['home', 'learn', 'marketplace', 'credits', 'dashboard', 'admin'].includes(hash)) {
+      if (validTabs.includes(hash)) {
         setCurrentTabState(hash);
       }
     };
@@ -66,6 +69,7 @@ const MainAppContent: React.FC = () => {
         {currentTab === 'home' && <HomePage onNavigate={setCurrentTab} />}
         {currentTab === 'learn' && <LearnTogetherPage />}
         {currentTab === 'marketplace' && <MarketplacePage />}
+        {currentTab === 'writing' && <WritingGigsPage onNavigateToCredits={() => setCurrentTab('credits')} />}
         {currentTab === 'credits' && <MyCreditsPage onNavigateToLearn={() => setCurrentTab('learn')} />}
         {currentTab === 'dashboard' && <DashboardPage onNavigate={setCurrentTab} />}
         {currentTab === 'admin' && <AdminPage />}

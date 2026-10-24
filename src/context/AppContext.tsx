@@ -8,7 +8,10 @@ import {
   NotificationItem,
   CreditTransaction,
   SkillEntry,
-  CreditAlert
+  CreditAlert,
+  WritingGigListing,
+  WritingJobAnnouncement,
+  WritingOrder
 } from '../types';
 import { 
   SEED_USERS, 
@@ -17,7 +20,10 @@ import {
   SEED_CREDIT_TRANSACTIONS, 
   SEED_TRANSACTIONS, 
   SEED_REPORTS,
-  SEED_NOTIFICATIONS 
+  SEED_NOTIFICATIONS,
+  SEED_WRITING_GIGS,
+  SEED_WRITING_ANNOUNCEMENTS,
+  SEED_WRITING_ORDERS
 } from '../data/seedData';
 import confetti from 'canvas-confetti';
 
@@ -85,6 +91,34 @@ interface AppContextType {
   toggleLiveMeet: (sessionId: string, isLive: boolean) => void;
   activeLiveMeetSession: LearningSession | null;
   setActiveLiveMeetSession: (session: LearningSession | null) => void;
+  
+  // Student Writing Gigs & Assignments Escrow
+  writingGigs: WritingGigListing[];
+  writingAnnouncements: WritingJobAnnouncement[];
+  writingOrders: WritingOrder[];
+  addWritingGig: (data: {
+    title: string;
+    serviceType: WritingGigListing['serviceType'];
+    pricingModel: WritingGigListing['pricingModel'];
+    rate: number;
+    turnaroundDays: number;
+    handwritingSample?: string;
+    languages: string[];
+    description: string;
+  }) => void;
+  postWritingAnnouncement: (data: {
+    title: string;
+    category: WritingJobAnnouncement['category'];
+    subject: string;
+    pagesCount: number;
+    deadline: string;
+    budget: number;
+    instructions: string;
+  }) => void;
+  createWritingOrderFromGig: (gigId: string, pagesCount: number, instructions: string) => { success: boolean; order?: WritingOrder; message?: string };
+  acceptWritingAnnouncement: (announcementId: string) => { success: boolean; order?: WritingOrder; message?: string };
+  submitOrderWork: (orderId: string, notes: string, sampleImages?: string[]) => void;
+  approveAndCompleteWritingOrder: (orderId: string) => { success: boolean; message?: string };
   
   // Book Transactions & Commission
   transactions: TransactionRecord[];
@@ -165,10 +199,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved || 'user-adil';
   });
 
-  // Book Listings
+  // Book Listings with automatic merging of new 20+ books and PDF notes
   const [listings, setListings] = useState<BookListing[]>(() => {
     const saved = localStorage.getItem(STORAGE_PREFIX + 'books');
-    return saved ? JSON.parse(saved) : SEED_BOOKS;
+    if (saved) {
+      try {
+        const parsed: BookListing[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(b => b.id));
+        const missing = SEED_BOOKS.filter(b => !existingIds.has(b.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_BOOKS;
+      }
+    }
+    return SEED_BOOKS;
   });
 
   // Favourites
@@ -195,6 +239,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Active Live Meet Video Room Modal
   const [activeLiveMeetSession, setActiveLiveMeetSession] = useState<LearningSession | null>(null);
+
+  // Student Writing Gigs & Assignments
+  const [writingGigs, setWritingGigs] = useState<WritingGigListing[]>(() => {
+    const saved = localStorage.getItem(STORAGE_PREFIX + 'writing_gigs');
+    if (saved) {
+      try {
+        const parsed: WritingGigListing[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(g => g.id));
+        const missing = SEED_WRITING_GIGS.filter(g => !existingIds.has(g.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_WRITING_GIGS;
+      }
+    }
+    return SEED_WRITING_GIGS;
+  });
+
+  const [writingAnnouncements, setWritingAnnouncements] = useState<WritingJobAnnouncement[]>(() => {
+    const saved = localStorage.getItem(STORAGE_PREFIX + 'writing_ann');
+    if (saved) {
+      try {
+        const parsed: WritingJobAnnouncement[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(a => a.id));
+        const missing = SEED_WRITING_ANNOUNCEMENTS.filter(a => !existingIds.has(a.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_WRITING_ANNOUNCEMENTS;
+      }
+    }
+    return SEED_WRITING_ANNOUNCEMENTS;
+  });
+
+  const [writingOrders, setWritingOrders] = useState<WritingOrder[]>(() => {
+    const saved = localStorage.getItem(STORAGE_PREFIX + 'writing_orders');
+    if (saved) {
+      try {
+        const parsed: WritingOrder[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(o => o.id));
+        const missing = SEED_WRITING_ORDERS.filter(o => !existingIds.has(o.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_WRITING_ORDERS;
+      }
+    }
+    return SEED_WRITING_ORDERS;
+  });
 
   // Credit Transactions
   const [creditTransactions, setCreditTransactions] = useState<CreditTransaction[]>(() => {
@@ -276,7 +366,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_PREFIX + 'book_tx', JSON.stringify(transactions));
     localStorage.setItem(STORAGE_PREFIX + 'reports', JSON.stringify(reports));
     localStorage.setItem(STORAGE_PREFIX + 'notifications', JSON.stringify(notifications));
-  }, [allUsers, currentUserId, listings, favourites, learningSessions, creditTransactions, transactions, reports, notifications]);
+    localStorage.setItem(STORAGE_PREFIX + 'writing_gigs', JSON.stringify(writingGigs));
+    localStorage.setItem(STORAGE_PREFIX + 'writing_ann', JSON.stringify(writingAnnouncements));
+    localStorage.setItem(STORAGE_PREFIX + 'writing_orders', JSON.stringify(writingOrders));
+  }, [allUsers, currentUserId, listings, favourites, learningSessions, creditTransactions, transactions, reports, notifications, writingGigs, writingAnnouncements, writingOrders]);
 
   // Switch Active User
   const switchUserById = (userId: string) => {
@@ -794,7 +887,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       confirmedByMentor: false,
       confirmedByLearner: false,
       notes: data.notes || `Interactive group study circle for ${data.maxParticipants} peers.`,
-      meetLink: `https://meet.nexathon.edu/room/${data.skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`,
+      meetLink: `https://meet.campusloop.edu/room/${data.skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`,
       sessionType: 'group',
       maxParticipants: data.maxParticipants,
       isLive: !!data.startLiveImmediately,
@@ -983,6 +1076,315 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, transaction: tx };
   };
 
+  // ============================================================
+  // STUDENT WRITING GIGS & ASSIGNMENT / RECORD ESCROW
+  // ============================================================
+
+  const addWritingGig = (data: {
+    title: string;
+    serviceType: WritingGigListing['serviceType'];
+    pricingModel: WritingGigListing['pricingModel'];
+    rate: number;
+    turnaroundDays: number;
+    handwritingSample?: string;
+    languages: string[];
+    description: string;
+  }) => {
+    const newGig: WritingGigListing = {
+      id: `gig-${Date.now()}`,
+      writerId: currentUser.id,
+      writerName: currentUser.name,
+      writerAvatar: currentUser.avatar,
+      writerCollege: currentUser.institution,
+      writerRating: currentUser.rating || 4.95,
+      reviewsCount: 1,
+      title: data.title,
+      serviceType: data.serviceType,
+      pricingModel: data.pricingModel,
+      rate: data.rate,
+      turnaroundDays: data.turnaroundDays,
+      handwritingSample: data.handwritingSample || 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80',
+      languages: data.languages.length > 0 ? data.languages : ['English'],
+      description: data.description,
+      completedJobsCount: 0,
+      isAvailable: true,
+      datePosted: new Date().toISOString().split('T')[0]
+    };
+
+    setWritingGigs(prev => [newGig, ...prev]);
+    triggerCreditAlert({
+      type: 'added',
+      message: `Your writing service "${data.title}" is now live for students to hire!`
+    });
+  };
+
+  const postWritingAnnouncement = (data: {
+    title: string;
+    category: WritingJobAnnouncement['category'];
+    subject: string;
+    pagesCount: number;
+    deadline: string;
+    budget: number;
+    instructions: string;
+  }) => {
+    const newAnn: WritingJobAnnouncement = {
+      id: `ann-${Date.now()}`,
+      requesterId: currentUser.id,
+      requesterName: currentUser.name,
+      requesterAvatar: currentUser.avatar,
+      requesterCollege: currentUser.institution,
+      title: data.title,
+      category: data.category,
+      subject: data.subject,
+      pagesCount: data.pagesCount,
+      deadline: data.deadline,
+      budget: data.budget,
+      instructions: data.instructions,
+      status: 'open',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setWritingAnnouncements(prev => [newAnn, ...prev]);
+    triggerCreditAlert({
+      type: 'added',
+      message: `Announcement posted! Student writers will be able to review and claim your work.`
+    });
+  };
+
+  const createWritingOrderFromGig = (gigId: string, pagesCount: number, instructions: string) => {
+    const gig = writingGigs.find(g => g.id === gigId);
+    if (!gig) return { success: false, message: 'Writing service not found' };
+
+    const totalAmount = gig.pricingModel === 'per_page' 
+      ? Math.max(gig.rate * Math.max(pagesCount, 1), 50) 
+      : gig.rate;
+    const advanceAmount = 10; // Strictly ₹10 advance as required
+    const remainingAmount = Math.max(totalAmount - advanceAmount, 0);
+    const platformFee = Math.round(totalAmount * 0.02 * 100) / 100; // 2% to app
+    const writerPayout = Math.round((totalAmount - platformFee) * 100) / 100; // 98% to writer
+
+    const orderNumber = `WR-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newOrder: WritingOrder = {
+      id: `order-${Date.now()}`,
+      orderNumber,
+      gigId: gig.id,
+      title: `${gig.serviceType}: ${gig.title}`,
+      category: gig.serviceType,
+      requesterId: currentUser.id,
+      requesterName: currentUser.name,
+      requesterCollege: currentUser.institution,
+      writerId: gig.writerId,
+      writerName: gig.writerName,
+      writerAvatar: gig.writerAvatar,
+      writerCollege: gig.writerCollege,
+      totalAmount,
+      advanceAmount,
+      remainingAmount,
+      platformFeeRate: 0.02,
+      platformFee,
+      writerPayout,
+      advancePaid: true,
+      advancePaidAt: new Date().toLocaleString(),
+      materialsSubmitted: true,
+      workInstructions: instructions,
+      workSubmitted: false,
+      finalPaid: false,
+      status: 'in_progress',
+      pagesCount,
+      deadline: `${gig.turnaroundDays} Days Delivery`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setWritingOrders(prev => [newOrder, ...prev]);
+
+    // Send notification to writer
+    const notif: NotificationItem = {
+      id: `notif-${Date.now()}`,
+      userId: gig.writerId,
+      title: 'New Writing Order Assigned! (₹10 Advance Received)',
+      message: `${currentUser.name} hired you for "${gig.title}". ₹10 advance escrow locked. Total payout upon completion: ₹${writerPayout}.`,
+      timestamp: new Date().toISOString(),
+      read: false,
+      type: 'system'
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    triggerCreditAlert({
+      type: 'added',
+      message: `₹10 Advance paid! Order #${orderNumber} locked with ${gig.writerName}.`
+    });
+
+    try {
+      confetti({ particleCount: 30, spread: 50, origin: { y: 0.5 } });
+    } catch {}
+
+    return { success: true, order: newOrder };
+  };
+
+  const acceptWritingAnnouncement = (announcementId: string) => {
+    const ann = writingAnnouncements.find(a => a.id === announcementId);
+    if (!ann) return { success: false, message: 'Announcement not found' };
+
+    const totalAmount = ann.budget;
+    const advanceAmount = 10;
+    const remainingAmount = Math.max(totalAmount - advanceAmount, 0);
+    const platformFee = Math.round(totalAmount * 0.02 * 100) / 100;
+    const writerPayout = Math.round((totalAmount - platformFee) * 100) / 100;
+
+    const orderNumber = `WR-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newOrder: WritingOrder = {
+      id: `order-${Date.now()}`,
+      orderNumber,
+      announcementId: ann.id,
+      title: ann.title,
+      category: ann.category,
+      requesterId: ann.requesterId,
+      requesterName: ann.requesterName,
+      requesterCollege: ann.requesterCollege,
+      writerId: currentUser.id,
+      writerName: currentUser.name,
+      writerAvatar: currentUser.avatar,
+      writerCollege: currentUser.institution,
+      totalAmount,
+      advanceAmount,
+      remainingAmount,
+      platformFeeRate: 0.02,
+      platformFee,
+      writerPayout,
+      advancePaid: true,
+      advancePaidAt: new Date().toLocaleString(),
+      materialsSubmitted: true,
+      workInstructions: ann.instructions,
+      workSubmitted: false,
+      finalPaid: false,
+      status: 'in_progress',
+      pagesCount: ann.pagesCount,
+      deadline: ann.deadline,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    setWritingOrders(prev => [newOrder, ...prev]);
+    setWritingAnnouncements(prev => prev.map(a => a.id === announcementId ? {
+      ...a,
+      status: 'assigned',
+      assignedWriterId: currentUser.id,
+      assignedWriterName: currentUser.name
+    } : a));
+
+    triggerCreditAlert({
+      type: 'added',
+      message: `You accepted "${ann.title}"! ₹10 advance locked in escrow.`
+    });
+
+    return { success: true, order: newOrder };
+  };
+
+  const submitOrderWork = (orderId: string, notes: string, sampleImages?: string[]) => {
+    setWritingOrders(prev => prev.map(order => {
+      if (order.id === orderId) {
+        return {
+          ...order,
+          workSubmitted: true,
+          workSubmittedAt: new Date().toLocaleString(),
+          workSubmissionNotes: notes,
+          workSampleImages: sampleImages || [
+            'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80'
+          ],
+          status: 'submitted_for_review'
+        };
+      }
+      return order;
+    }));
+
+    const order = writingOrders.find(o => o.id === orderId);
+    if (order) {
+      const notif: NotificationItem = {
+        id: `notif-${Date.now()}`,
+        userId: order.requesterId,
+        title: 'Writing Work Submitted for Review!',
+        message: `${order.writerName} has submitted completed work for "${order.title}". Review and release payment.`,
+        timestamp: new Date().toISOString(),
+        read: false,
+        type: 'system'
+      };
+      setNotifications(prev => [notif, ...prev]);
+    }
+
+    triggerCreditAlert({
+      type: 'added',
+      message: 'Work submitted for student review!'
+    });
+  };
+
+  const approveAndCompleteWritingOrder = (orderId: string) => {
+    const order = writingOrders.find(o => o.id === orderId);
+    if (!order) return { success: false, message: 'Order not found' };
+
+    // Update order status to completed
+    setWritingOrders(prev => prev.map(o => o.id === orderId ? {
+      ...o,
+      finalPaid: true,
+      finalPaidAt: new Date().toLocaleString(),
+      status: 'completed'
+    } : o));
+
+    // Update student balances:
+    // Writer receives writerPayout (98%), app earns platformFee (2%), and both earn +2 credits
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === order.writerId) {
+        return {
+          ...u,
+          credits: u.credits + 2,
+          earnings: u.earnings + order.writerPayout,
+          completedSessionsCount: (u.completedSessionsCount || 0) + 1
+        };
+      }
+      if (u.id === order.requesterId) {
+        return {
+          ...u,
+          credits: u.credits + 2
+        };
+      }
+      return u;
+    }));
+
+    // Record credit transactions (+2 for both)
+    const reqCreditTx: CreditTransaction = {
+      id: `ctx-writing-req-${Date.now()}`,
+      userId: order.requesterId,
+      amount: 2,
+      type: 'earned_book',
+      description: `Earned +2 bonus credits for completing writing order: "${order.title}"`,
+      timestamp: new Date().toISOString(),
+      status: 'completed'
+    };
+
+    const writerCreditTx: CreditTransaction = {
+      id: `ctx-writing-wri-${Date.now()}`,
+      userId: order.writerId,
+      amount: 2,
+      type: 'earned_teaching',
+      description: `Earned +2 bonus credits for writing delivery: "${order.title}"`,
+      timestamp: new Date().toISOString(),
+      status: 'completed'
+    };
+
+    setCreditTransactions(prev => [reqCreditTx, writerCreditTx, ...prev]);
+
+    triggerCreditAlert({
+      type: 'added',
+      message: `Work approved! Remaining ₹${order.remainingAmount} released. (2% App Fee: ₹${order.platformFee.toFixed(2)}, Writer Payout: ₹${order.writerPayout.toFixed(2)}). +2 Bonus Credits added!`
+    });
+
+    try {
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.5 } });
+    } catch {}
+
+    return { success: true };
+  };
+
   // --- Reports & Moderation ---
 
   const submitReport = (targetType: 'listing' | 'session' | 'user', targetId: string, targetTitle: string, reason: string) => {
@@ -1119,6 +1521,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toggleLiveMeet,
       activeLiveMeetSession,
       setActiveLiveMeetSession,
+
+      // Student Writing Gigs & Assignments Escrow
+      writingGigs,
+      writingAnnouncements,
+      writingOrders,
+      addWritingGig,
+      postWritingAnnouncement,
+      createWritingOrderFromGig,
+      acceptWritingAnnouncement,
+      submitOrderWork,
+      approveAndCompleteWritingOrder,
 
       // Transactions & Commission
       transactions,

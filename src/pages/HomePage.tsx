@@ -13,7 +13,8 @@ import {
   Lock, 
   Heart,
   ChevronRight,
-  CreditCard
+  CreditCard,
+  PenTool
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
@@ -80,10 +81,18 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
             <button
               onClick={() => onNavigate('marketplace')}
-              className="w-full sm:w-auto px-8 py-4 bg-white/10 hover:bg-white/20 text-white font-extrabold text-sm rounded-2xl border border-white/20 backdrop-blur-md hover:border-white/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+              className="w-full sm:w-auto px-6 py-4 bg-white/10 hover:bg-white/20 text-white font-extrabold text-sm rounded-2xl border border-white/20 backdrop-blur-md hover:border-white/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
             >
               <BookOpen className="w-5 h-5 text-indigo-300" />
-              <span>Book Marketplace</span>
+              <span>Book Marketplace & PDFs</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('writing')}
+              className="w-full sm:w-auto px-6 py-4 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-100 hover:text-white font-extrabold text-sm rounded-2xl border border-indigo-400/30 backdrop-blur-md hover:border-indigo-400/50 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer"
+            >
+              <PenTool className="w-5 h-5 text-amber-300" />
+              <span>Writing Gigs (₹10 Escrow)</span>
             </button>
           </div>
 
@@ -116,7 +125,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       <section className="space-y-6">
         <div className="text-center space-y-1">
           <span className="text-xs font-black uppercase tracking-widest text-purple-800">Everything In One Ecosystem</span>
-          <h2 className="font-heading text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">How Nexathon Empowers Students</h2>
+          <h2 className="font-heading text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">How CampusLoop Empowers Students</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -214,7 +223,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       <section className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden border border-slate-800">
         <div className="max-w-3xl mb-8 space-y-1.5">
           <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">Simple Exchange Workflow</span>
-          <h2 className="font-heading text-2xl sm:text-3xl font-black">How Nexathon Works</h2>
+          <h2 className="font-heading text-2xl sm:text-3xl font-black">How CampusLoop Works</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -360,7 +369,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           <span className="text-[10px] font-black uppercase tracking-widest text-purple-700 bg-white px-3 py-1 rounded-full border border-purple-200 inline-block">
             Sample Content &bull; Demo Testimonials
           </span>
-          <h3 className="text-xl font-extrabold text-slate-900">What Students Say About Nexathon</h3>
+          <h3 className="text-xl font-extrabold text-slate-900">What Students Say About CampusLoop</h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -421,7 +430,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
           Ready to Learn, Teach, and Exchange?
         </h2>
         <p className="text-xs sm:text-sm text-indigo-100 max-w-xl mx-auto">
-          Join your college peer community on Nexathon. Learn in-demand tech and design skills from fellow students with zero course fees.
+          Join your college peer community on CampusLoop. Learn in-demand tech and design skills from fellow students with zero course fees.
         </p>
         <button
           onClick={() => onNavigate('learn')}
