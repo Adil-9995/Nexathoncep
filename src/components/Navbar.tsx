@@ -154,24 +154,24 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 <span>Top-Up</span>
               </button>
 
-              {/* Notifications Dropdown - Hidden on mobile (<640px) to prevent overflow */}
-              <div className="relative shrink-0 hidden sm:block">
+              {/* Notifications Dropdown - Always visible */}
+              <div className="relative shrink-0">
                 <button
                   onClick={() => {
                     setNotifDropdownOpen(!notifDropdownOpen);
                     if (!notifDropdownOpen) setUserDropdownOpen(false);
                   }}
-                  className="h-9 w-9 rounded-xl border border-slate-200/70 hover:bg-slate-100 text-slate-600 hover:text-slate-900 inline-flex items-center justify-center transition-all relative cursor-pointer"
+                  className="h-8 sm:h-9 w-8 sm:w-9 rounded-xl border border-slate-200/70 hover:bg-slate-100 text-slate-600 hover:text-slate-900 inline-flex items-center justify-center transition-all relative cursor-pointer"
                   aria-label="Notifications"
                 >
-                  <Bell className="w-4 h-4" />
+                  <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   {unreadNotifications.length > 0 && (
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
                   )}
                 </button>
 
                 {notifDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
+                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                       <span className="font-extrabold text-xs text-slate-900">Notifications</span>
                       <span className="text-[10px] text-purple-700 font-bold">{unreadNotifications.length} Unread</span>
@@ -210,26 +210,27 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 )}
               </div>
 
-              {/* Profile Dropdown - Hidden on mobile (<640px) to prevent overflow */}
-              <div className="relative shrink-0 hidden sm:block">
+              {/* Profile & Switch Account Dropdown - Always visible */}
+              <div className="relative shrink-0">
                 <button
                   onClick={() => {
                     setUserDropdownOpen(!userDropdownOpen);
                     if (!userDropdownOpen) setNotifDropdownOpen(false);
                   }}
-                  className="h-9 px-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200/70 text-slate-800 text-xs font-bold inline-flex items-center gap-1.5 sm:gap-2 transition-all cursor-pointer"
+                  className="h-8 sm:h-9 px-1.5 sm:px-2 rounded-xl bg-slate-100 hover:bg-slate-200/80 border border-slate-200/70 text-slate-800 text-xs font-bold inline-flex items-center gap-1 sm:gap-2 transition-all cursor-pointer"
+                  title="Switch student profile or view account"
                 >
                   <img 
                     src={currentUser.avatar} 
                     alt={currentUser.name} 
-                    className="w-6 h-6 rounded-lg object-cover ring-1.5 ring-purple-600/40 shrink-0"
+                    className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg object-cover ring-1.5 ring-purple-600/40 shrink-0"
                   />
                   <span className="hidden md:inline font-bold max-w-[85px] lg:max-w-[105px] truncate">{currentUser.name}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0" />
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
+                  <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
                     
                     {/* Current Active User Profile Summary */}
                     <div className="pb-3 border-b border-slate-100 space-y-1">
@@ -417,6 +418,35 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 <Coins className="w-4 h-4 text-amber-300 fill-amber-300" />
                 <span>Add / Top-Up Credits</span>
               </button>
+
+              {/* Switch Student Account in Mobile Drawer */}
+              <div className="pt-3 border-t border-slate-200 space-y-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 block px-1">
+                  Switch Student Profile ({allUsers.length} Students)
+                </span>
+                <div className="space-y-1 text-xs max-h-48 overflow-y-auto pr-1">
+                  {allUsers.map(user => (
+                    <button
+                      key={user.id}
+                      onClick={() => {
+                        switchUserById(user.id);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full text-left p-2 rounded-xl flex items-center justify-between transition-all cursor-pointer ${
+                        user.id === currentUser.id 
+                          ? 'bg-purple-100 text-purple-900 font-extrabold border border-purple-200' 
+                          : 'hover:bg-slate-50 text-slate-600 border border-transparent'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <img src={user.avatar} alt={user.name} className="w-6 h-6 rounded-lg object-cover ring-1 ring-purple-600/30" />
+                        <span className="truncate max-w-[150px]">{user.name}</span>
+                      </div>
+                      <span className="text-[10px] text-amber-900 bg-amber-100 px-1.5 py-0.5 rounded font-bold">{user.credits}c</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Mobile Drawer Profile & Dashboard Links */}
               <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs font-bold">
