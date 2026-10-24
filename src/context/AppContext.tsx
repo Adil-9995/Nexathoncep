@@ -63,6 +63,8 @@ interface AppContextType {
   addListing: (book: Omit<BookListing, 'id' | 'sellerId' | 'sellerName' | 'sellerAvatar' | 'sellerCollege' | 'sellerRating' | 'status' | 'datePosted' | 'views' | 'favouritesCount'>) => void;
   deleteListing: (bookId: string) => void;
   completePurchase: (bookId: string, paymentMethod: string) => { success: boolean; transaction?: TransactionRecord };
+  releaseBookEscrow: (transactionId: string) => { success: boolean; message?: string };
+  disputeBookEscrow: (transactionId: string, reason: string) => { success: boolean; message?: string };
   
   // Peer Learning & Sessions
   learningSessions: LearningSession[];
@@ -305,7 +307,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Book Marketplace Transactions
   const [transactions, setTransactions] = useState<TransactionRecord[]>(() => {
     const saved = localStorage.getItem(STORAGE_PREFIX + 'book_tx');
-    return saved ? JSON.parse(saved) : SEED_TRANSACTIONS;
+    if (saved) {
+      try {
+        const parsed: TransactionRecord[] = JSON.parse(saved);
+        const existingIds = new Set(parsed.map(t => t.id));
+        const missing = SEED_TRANSACTIONS.filter(t => !existingIds.has(t.id));
+        return [...parsed, ...missing];
+      } catch {
+        return SEED_TRANSACTIONS;
+      }
+    }
+    return SEED_TRANSACTIONS;
   });
 
   // Moderation Reports
@@ -980,6 +992,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const platformCommission = Math.round(price * commissionRate); // e.g. 2% of ₹500 = ₹10
     const sellerPayout = price - platformCommission;                // ₹490
     const savings = Math.max(0, targetBook.originalReferencePrice - price);
+    const isDigitalPdf = targetBook.itemFormat === 'pdf';
 
     const tx: TransactionRecord = {
       id: `tx-book-${Date.now()}`,
@@ -997,81 +1010,125 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       platformCommission,
       sellerPayout,
       listingType: 'sell',
-      status: 'completed',
+      status: isDigitalPdf ? 'completed' : 'escrow_hold',
       timestamp: new Date().toISOString(),
       isDemo: true,
-      paymentMethod
+      paymentMethod,
+      itemFormat: targetBook.itemFormat || 'physical',
+      escrowStatus: isDigitalPdf ? 'released_to_seller' : 'held_in_escrow',
+      escrowHeldAmount: price,
+      inspectionDeadline: isDigitalPdf ? undefined : 'In 48 Hours (Campus Handover & Inspection Window)'
     };
 
     // Mark book as sold
     setListings(prev => prev.map(b => b.id === bookId ? { ...b, status: 'sold' as const } : b));
     setTransactions(prev => [tx, ...prev]);
 
-    // Update student savings, seller earnings, and reward +2 CREDITS TO BOTH PERSONS
-    setAllUsers(prev => prev.map(u => {
-      if (u.id === currentUser.id) {
-        return { 
-          ...u, 
-          credits: u.credits + 2,
-          moneySaved: u.moneySaved + savings,
-          itemsReusedCount: (u.itemsReusedCount || 0) + 1
-        };
-      }
-      if (u.id === targetBook.sellerId) {
-        return { 
-          ...u, 
-          credits: u.credits + 2,
-          earnings: u.earnings + sellerPayout,
-          itemsReusedCount: (u.itemsReusedCount || 0) + 1
-        };
-      }
-      return u;
-    }));
+    if (isDigitalPdf) {
+      // PDF: immediate payout and immediate +2 credits
+      setAllUsers(prev => prev.map(u => {
+        if (u.id === currentUser.id) {
+          return { 
+            ...u, 
+            credits: u.credits + 2,
+            moneySaved: u.moneySaved + savings,
+            itemsReusedCount: (u.itemsReusedCount || 0) + 1
+          };
+        }
+        if (u.id === targetBook.sellerId) {
+          return { 
+            ...u, 
+            credits: u.credits + 2,
+            earnings: u.earnings + sellerPayout,
+            itemsReusedCount: (u.itemsReusedCount || 0) + 1
+          };
+        }
+        return u;
+      }));
 
-    // Record +2 Credit Transactions for Both Buyer and Seller
-    const buyerRewardTx: CreditTransaction = {
-      id: `ctx-book-buy-${Date.now()}`,
-      userId: currentUser.id,
-      amount: 2,
-      type: 'earned_book',
-      description: `Earned +2 bonus credits for purchasing textbook: "${targetBook.title}"`,
-      timestamp: new Date().toISOString(),
-      status: 'completed',
-      relatedEntityId: tx.id
-    };
+      const buyerRewardTx: CreditTransaction = {
+        id: `ctx-book-buy-${Date.now()}`,
+        userId: currentUser.id,
+        amount: 2,
+        type: 'earned_book',
+        description: `Earned +2 bonus credits for purchasing PDF notes: "${targetBook.title}"`,
+        timestamp: new Date().toISOString(),
+        status: 'completed',
+        relatedEntityId: tx.id
+      };
 
-    const sellerRewardTx: CreditTransaction = {
-      id: `ctx-book-sell-${Date.now()}`,
-      userId: targetBook.sellerId,
-      amount: 2,
-      type: 'earned_book',
-      description: `Earned +2 bonus credits for selling textbook: "${targetBook.title}"`,
-      timestamp: new Date().toISOString(),
-      status: 'completed',
-      relatedEntityId: tx.id
-    };
+      const sellerRewardTx: CreditTransaction = {
+        id: `ctx-book-sell-${Date.now()}`,
+        userId: targetBook.sellerId,
+        amount: 2,
+        type: 'earned_book',
+        description: `Earned +2 bonus credits for selling PDF notes: "${targetBook.title}"`,
+        timestamp: new Date().toISOString(),
+        status: 'completed',
+        relatedEntityId: tx.id
+      };
 
-    setCreditTransactions(prev => [buyerRewardTx, sellerRewardTx, ...prev]);
+      setCreditTransactions(prev => [buyerRewardTx, sellerRewardTx, ...prev]);
 
-    // Send notification to Seller
-    const sellerNotif: NotificationItem = {
-      id: `notif-${Date.now()}-seller`,
-      userId: targetBook.sellerId,
-      title: 'Book Sold & +2 Credits Added!',
-      message: `${currentUser.name} purchased "${targetBook.title}". ₹${sellerPayout} earnings and +2 bonus learning credits added to your wallet!`,
-      timestamp: 'Just now',
-      read: false,
-      actionUrl: '#my-credits',
-      type: 'book_order'
-    };
-    setNotifications(prev => [sellerNotif, ...prev]);
+      const sellerNotif: NotificationItem = {
+        id: `notif-${Date.now()}-seller`,
+        userId: targetBook.sellerId,
+        title: 'PDF Notes Purchased!',
+        message: `${currentUser.name} purchased "${targetBook.title}". ₹${sellerPayout} earnings and +2 credits deposited to your wallet!`,
+        timestamp: 'Just now',
+        read: false,
+        actionUrl: '#credits',
+        type: 'book_order'
+      };
+      setNotifications(prev => [sellerNotif, ...prev]);
 
-    // Interactive Toast Notification for Buyer
-    triggerCreditAlert({
-      type: 'added',
-      amount: 2,
-      message: `+2 Credits added to your wallet for book transaction!`
-    });
+      triggerCreditAlert({
+        type: 'added',
+        amount: 2,
+        message: `+2 Credits added to your wallet for PDF purchase!`
+      });
+    } else {
+      // Physical Book: Funds are held safely in Campus Escrow!
+      setAllUsers(prev => prev.map(u => {
+        if (u.id === currentUser.id) {
+          return { 
+            ...u, 
+            moneySaved: u.moneySaved + savings,
+            itemsReusedCount: (u.itemsReusedCount || 0) + 1
+          };
+        }
+        return u;
+      }));
+
+      const sellerNotif: NotificationItem = {
+        id: `notif-${Date.now()}-seller`,
+        userId: targetBook.sellerId,
+        title: 'New Book Order in Campus Escrow!',
+        message: `${currentUser.name} purchased "${targetBook.title}". ₹${price} is securely locked in Campus Escrow. Meet on campus to handover book.`,
+        timestamp: 'Just now',
+        read: false,
+        actionUrl: '#marketplace',
+        type: 'book_order'
+      };
+
+      const buyerNotif: NotificationItem = {
+        id: `notif-${Date.now()}-buyer`,
+        userId: currentUser.id,
+        title: 'Escrow Protection Active',
+        message: `₹${price} for "${targetBook.title}" is locked in Campus Escrow. Inspect book on campus & tap 'Release Escrow' within 48h.`,
+        timestamp: 'Just now',
+        read: false,
+        actionUrl: '#marketplace',
+        type: 'book_order'
+      };
+
+      setNotifications(prev => [sellerNotif, buyerNotif, ...prev]);
+
+      triggerCreditAlert({
+        type: 'added',
+        message: `Escrow Active: ₹${price} safely locked in Campus Escrow!`
+      });
+    }
 
     try {
       confetti({
@@ -1084,6 +1141,142 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     return { success: true, transaction: tx };
+  };
+
+  const releaseBookEscrow = (transactionId: string) => {
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return { success: false, message: 'Transaction not found' };
+    if (tx.status === 'completed' || tx.escrowStatus === 'released_to_seller') {
+      return { success: false, message: 'Escrow has already been released' };
+    }
+
+    // Update transaction to completed & released
+    const updatedTx: TransactionRecord = {
+      ...tx,
+      status: 'completed',
+      escrowStatus: 'released_to_seller',
+      escrowReleasedAt: new Date().toISOString()
+    };
+
+    setTransactions(prev => prev.map(t => t.id === transactionId ? updatedTx : t));
+
+    // Credit seller with payout earnings and both parties with +2 credits
+    setAllUsers(prev => prev.map(u => {
+      if (u.id === tx.sellerId) {
+        return {
+          ...u,
+          credits: u.credits + 2,
+          earnings: u.earnings + tx.sellerPayout,
+          itemsReusedCount: (u.itemsReusedCount || 0) + 1
+        };
+      }
+      if (u.id === tx.buyerId) {
+        return {
+          ...u,
+          credits: u.credits + 2
+        };
+      }
+      return u;
+    }));
+
+    const buyerRewardTx: CreditTransaction = {
+      id: `ctx-escrow-buy-${Date.now()}`,
+      userId: tx.buyerId,
+      amount: 2,
+      type: 'earned_book',
+      description: `Earned +2 bonus credits for verifying receipt of "${tx.listingTitle}"`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      relatedEntityId: tx.id
+    };
+
+    const sellerRewardTx: CreditTransaction = {
+      id: `ctx-escrow-sell-${Date.now()}`,
+      userId: tx.sellerId,
+      amount: 2,
+      type: 'earned_book',
+      description: `Earned +2 bonus credits & received ₹${tx.sellerPayout} payout for "${tx.listingTitle}"`,
+      timestamp: new Date().toISOString(),
+      status: 'completed',
+      relatedEntityId: tx.id
+    };
+
+    setCreditTransactions(prev => [buyerRewardTx, sellerRewardTx, ...prev]);
+
+    const sellerNotif: NotificationItem = {
+      id: `notif-${Date.now()}-seller-rel`,
+      userId: tx.sellerId,
+      title: 'Escrow Released — ₹' + tx.sellerPayout + ' Credited!',
+      message: `${tx.buyerName} confirmed receipt of "${tx.listingTitle}". Your payout of ₹${tx.sellerPayout} and +2 credits have been credited to your wallet!`,
+      timestamp: 'Just now',
+      read: false,
+      actionUrl: '#credits',
+      type: 'book_order'
+    };
+
+    const buyerNotif: NotificationItem = {
+      id: `notif-${Date.now()}-buyer-rel`,
+      userId: tx.buyerId,
+      title: 'Book Escrow Verified & Completed',
+      message: `You released escrow for "${tx.listingTitle}". +2 Learning Credits rewarded!`,
+      timestamp: 'Just now',
+      read: false,
+      actionUrl: '#marketplace',
+      type: 'book_order'
+    };
+
+    setNotifications(prev => [sellerNotif, buyerNotif, ...prev]);
+
+    triggerCreditAlert({
+      type: 'added',
+      amount: 2,
+      message: `Escrow Released! ₹${tx.sellerPayout} paid to seller & +2 credits rewarded!`
+    });
+
+    try {
+      confetti({
+        particleCount: 75,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    } catch {
+      // ignore
+    }
+
+    return { success: true };
+  };
+
+  const disputeBookEscrow = (transactionId: string, reason: string) => {
+    const tx = transactions.find(t => t.id === transactionId);
+    if (!tx) return { success: false, message: 'Transaction not found' };
+
+    const updatedTx: TransactionRecord = {
+      ...tx,
+      status: 'disputed',
+      escrowStatus: 'disputed',
+      disputeReason: reason
+    };
+
+    setTransactions(prev => prev.map(t => t.id === transactionId ? updatedTx : t));
+
+    const rep: ModerationReport = {
+      id: `rep-escrow-${Date.now()}`,
+      targetType: 'listing',
+      targetId: tx.id,
+      targetTitle: `Escrow Dispute: ${tx.listingTitle}`,
+      reporterName: currentUser.name,
+      reason: `Buyer raised escrow dispute: ${reason}. Total held: ₹${tx.price}.`,
+      timestamp: new Date().toISOString(),
+      status: 'pending'
+    };
+    setReports(prev => [rep, ...prev]);
+
+    triggerCreditAlert({
+      type: 'error',
+      message: `Escrow disputed. Funds remain on hold for campus mediation.`
+    });
+
+    return { success: true };
   };
 
   // ============================================================
@@ -1512,6 +1705,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addListing,
       deleteListing,
       completePurchase,
+      releaseBookEscrow,
+      disputeBookEscrow,
 
       // Learning Sessions
       learningSessions,

@@ -153,8 +153,8 @@ const MainAppContent: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
         {currentTab === 'home' && <HomePage onNavigate={setCurrentTab} />}
         {currentTab === 'learn' && <LearnTogetherPage />}
-        {currentTab === 'marketplace' && <MarketplacePage />}
-        {currentTab === 'writing' && <WritingGigsPage onNavigateToCredits={() => setCurrentTab('credits')} />}
+        {currentTab === 'marketplace' && <MarketplacePage initialTab="books" />}
+        {currentTab === 'writing' && <MarketplacePage initialTab="writing" />}
         {currentTab === 'credits' && <MyCreditsPage onNavigateToLearn={() => setCurrentTab('learn')} />}
         {currentTab === 'dashboard' && <DashboardPage onNavigate={setCurrentTab} />}
         {currentTab === 'admin' && <AdminPage />}

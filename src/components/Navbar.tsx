@@ -45,8 +45,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
   const navLinks = [
     { id: 'home', label: 'Home', shortLabel: 'Home', icon: Repeat },
     { id: 'learn', label: 'Explore Skills', shortLabel: 'Skills', icon: GraduationCap },
-    { id: 'marketplace', label: 'Book Marketplace', shortLabel: 'Marketplace', icon: BookOpen },
-    { id: 'writing', label: 'Writing Gigs', shortLabel: 'Writing', icon: PenTool, badge: 'Escrow' },
+    { id: 'marketplace', label: 'Book Marketplace', shortLabel: 'Marketplace', icon: BookOpen, badge: 'Escrow' },
+    { id: 'writing', label: 'Writing Gigs', shortLabel: 'Writing', icon: PenTool },
     { id: 'credits', label: 'Credit Wallet', shortLabel: 'Wallet', icon: Coins },
   ];
 

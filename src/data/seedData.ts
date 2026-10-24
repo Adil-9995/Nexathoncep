@@ -1483,7 +1483,35 @@ export const SEED_TRANSACTIONS: TransactionRecord[] = [
     status: 'completed',
     timestamp: '2026-10-18T14:30:00Z',
     isDemo: true,
-    paymentMethod: 'Simulated Campus UPI'
+    paymentMethod: 'Simulated Campus UPI',
+    escrowStatus: 'released_to_seller',
+    itemFormat: 'physical',
+    escrowReleasedAt: '2026-10-20T11:00:00Z'
+  },
+  {
+    id: 'tx-002',
+    listingId: 'book-seed-2',
+    listingTitle: 'Digital Design & Computer Architecture (2nd Edition)',
+    listingCategory: 'Electronics & Communication',
+    sellerId: 'user-anu',
+    sellerName: 'Anu Susan',
+    buyerId: 'user-adil',
+    buyerName: 'Adil Hassan',
+    price: 380,
+    originalReferencePrice: 850,
+    estimatedStudentSavings: 470,
+    commissionRate: 0.02,
+    platformCommission: 8,
+    sellerPayout: 372,
+    listingType: 'sell',
+    status: 'escrow_hold',
+    timestamp: '2026-10-24T18:45:00Z',
+    isDemo: true,
+    paymentMethod: 'Simulated Campus UPI',
+    escrowStatus: 'held_in_escrow',
+    itemFormat: 'physical',
+    escrowHeldAmount: 380,
+    inspectionDeadline: 'Tomorrow, 6:45 PM (38h remaining)'
   }
 ];
 

@@ -234,6 +234,8 @@ export interface WritingOrder {
   createdAt: string;
 }
 
+export type EscrowStatus = 'held_in_escrow' | 'released_to_seller' | 'refunded' | 'disputed';
+
 export interface TransactionRecord {
   id: string;
   listingId: string;
@@ -250,10 +252,18 @@ export interface TransactionRecord {
   platformCommission: number; // e.g. ₹10 on ₹500
   sellerPayout: number; // e.g. ₹490 on ₹500
   listingType: ListingType;
-  status: 'completed' | 'pending' | 'cancelled';
+  status: 'completed' | 'pending' | 'cancelled' | 'escrow_hold' | 'disputed';
   timestamp: string;
   isDemo: boolean;
   paymentMethod?: string;
+
+  // Campus Escrow Protection fields
+  escrowStatus?: EscrowStatus;
+  itemFormat?: 'physical' | 'pdf';
+  escrowHeldAmount?: number;
+  escrowReleasedAt?: string;
+  inspectionDeadline?: string;
+  disputeReason?: string;
 }
 
 export interface SessionParticipant {
