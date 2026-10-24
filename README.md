@@ -33,27 +33,36 @@ The website is deployed using Vercel.
 
 ## 📸 Screenshots
 
-> Replace the image paths below with screenshots captured from your actual deployed website. Add the images to the repository's `screenshots/` folder.
+Explore the CampusLoop interface through the screenshots below.
 
-### 1. Homepage
+<div align="center">
 
-The main landing page introducing CampusLoop and its student-focused ecosystem.
+### 🏠 1. Homepage
 
-![CampusLoop Homepage](screenshots/homepage.png)
+<img width="800" alt="CampusLoop Homepage" src="https://github.com/user-attachments/assets/f8304cbc-6ae2-4c8c-8be3-75362a5f989e" />
 
-### 2. Skill-Sharing Platform
-
-A screenshot of the peer-to-peer learning or skill-sharing section, if available in the current implementation.
-
-![CampusLoop Skill Sharing](screenshots/skills.png)
-
-### 3. Educational Resources
-
-A screenshot of the educational resources, notes, books, or marketplace section, if available.
-
-![CampusLoop Resources](screenshots/resources.png)
+*The main landing page introducing the CampusLoop platform.*
 
 ---
+
+### 🤝 2. Skill-Sharing Platform
+
+<img width="800" alt="CampusLoop Skill-Sharing Platform" src="https://github.com/user-attachments/assets/b1c6d24f-4026-48b3-9ceb-ae77bc7fd5de" />
+
+*A visual overview of the student skill-sharing experience.*
+
+---
+
+### 📚 3. Educational Resources
+
+<img width="800" alt="CampusLoop Educational Resources" src="https://github.com/user-attachments/assets/7009b894-c421-43fe-98fd-e6bca578aa56" />
+
+*A visual overview of the educational resources experience.*
+
+</div>
+
+---
+
 
 ## 🎯 Problem Statement
 
