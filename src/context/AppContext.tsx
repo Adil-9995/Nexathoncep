@@ -221,12 +221,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : ['book-1'];
   });
 
-  // Learning Sessions with automatic merging of new group study circles
+  // Learning Sessions with automatic merging of new group study circles and URL sanitization
   const [learningSessions, setLearningSessions] = useState<LearningSession[]>(() => {
+    const sanitizeSession = (s: LearningSession): LearningSession => {
+      if (s.meetLink && (s.meetLink.includes('nexathon.edu') || s.meetLink.includes('campusloop.edu'))) {
+        const parts = s.meetLink.split('/room/');
+        if (parts.length > 1) {
+          return { ...s, meetLink: `/room/${parts[1]}` };
+        }
+      }
+      return s;
+    };
+
     const saved = localStorage.getItem(STORAGE_PREFIX + 'sessions');
     if (saved) {
       try {
-        const parsed: LearningSession[] = JSON.parse(saved);
+        const parsed: LearningSession[] = JSON.parse(saved).map(sanitizeSession);
         const existingIds = new Set(parsed.map(s => s.id));
         const missing = SEED_SESSIONS.filter(s => !existingIds.has(s.id));
         return [...parsed, ...missing];
@@ -887,7 +897,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       confirmedByMentor: false,
       confirmedByLearner: false,
       notes: data.notes || `Interactive group study circle for ${data.maxParticipants} peers.`,
-      meetLink: `https://meet.campusloop.edu/room/${data.skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`,
+      meetLink: `/room/${data.skillName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`,
       sessionType: 'group',
       maxParticipants: data.maxParticipants,
       isLive: !!data.startLiveImmediately,

@@ -71,10 +71,21 @@ export const LiveMeetModal: React.FC = () => {
   };
 
   const handleCopyLink = () => {
-    const link = session.meetLink || `https://meet.campusloop.edu/room/${session.id}`;
+    const origin = typeof window !== 'undefined' && window.location.origin 
+      ? window.location.origin 
+      : 'https://nexathoncep.vercel.app';
+    
+    let slug = session.id;
+    if (session.meetLink) {
+      const parts = session.meetLink.split('/room/');
+      if (parts.length > 1 && parts[1]) {
+        slug = parts[1].replace(/[^a-z0-9-_]/gi, '');
+      }
+    }
+    const link = `${origin}/room/${slug}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
