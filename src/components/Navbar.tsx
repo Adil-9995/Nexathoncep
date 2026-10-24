@@ -46,7 +46,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
     { id: 'home', label: 'Home', shortLabel: 'Home', icon: Repeat },
     { id: 'learn', label: 'Explore Skills', shortLabel: 'Skills', icon: GraduationCap },
     { id: 'marketplace', label: 'Book Marketplace', shortLabel: 'Marketplace', icon: BookOpen, badge: 'Escrow' },
-    { id: 'writing', label: 'Writing Gigs', shortLabel: 'Writing', icon: PenTool },
     { id: 'credits', label: 'Credit Wallet', shortLabel: 'Wallet', icon: Coins },
   ];
 
@@ -154,62 +153,6 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 <span>Top-Up</span>
               </button>
 
-              {/* Notifications Dropdown - Always visible */}
-              <div className="relative shrink-0">
-                <button
-                  onClick={() => {
-                    setNotifDropdownOpen(!notifDropdownOpen);
-                    if (!notifDropdownOpen) setUserDropdownOpen(false);
-                  }}
-                  className="h-8 sm:h-9 w-8 sm:w-9 rounded-xl border border-slate-200/70 hover:bg-slate-100 text-slate-600 hover:text-slate-900 inline-flex items-center justify-center transition-all relative cursor-pointer"
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  {unreadNotifications.length > 0 && (
-                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
-                  )}
-                </button>
-
-                {notifDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                      <span className="font-extrabold text-xs text-slate-900">Notifications</span>
-                      <span className="text-[10px] text-purple-700 font-bold">{unreadNotifications.length} Unread</span>
-                    </div>
-
-                    <div className="max-h-64 overflow-y-auto space-y-2 text-xs">
-                      {notifications.length === 0 ? (
-                        <p className="text-slate-400 text-center py-4">No notifications yet.</p>
-                      ) : (
-                        notifications.map(n => (
-                          <div 
-                            key={n.id}
-                            onClick={() => {
-                              markNotificationRead(n.id);
-                              if (n.actionUrl) {
-                                if (n.actionUrl.includes('sessions')) setCurrentTab('learn');
-                                if (n.actionUrl.includes('credits')) setCurrentTab('credits');
-                                if (n.actionUrl.includes('marketplace')) setCurrentTab('marketplace');
-                              }
-                              setNotifDropdownOpen(false);
-                            }}
-                            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
-                              n.read ? 'bg-slate-50 hover:bg-slate-100' : 'bg-purple-50/80 hover:bg-purple-100 border border-purple-200'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-0.5">
-                              <span className="font-bold text-slate-900 text-[11px]">{n.title}</span>
-                              <span className="text-[9px] text-slate-400">{n.timestamp}</span>
-                            </div>
-                            <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">{n.message}</p>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Profile & Switch Account Dropdown - Always visible */}
               <div className="relative shrink-0">
                 <button
@@ -230,7 +173,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
+                  <div className="absolute right-0 sm:right-auto sm:left-0 md:right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
                     
                     {/* Current Active User Profile Summary */}
                     <div className="pb-3 border-b border-slate-100 space-y-1">
@@ -321,6 +264,62 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                       </button>
                     </div>
 
+                  </div>
+                )}
+              </div>
+
+              {/* Notifications Dropdown (Bell) - Positioned to the right of Profile */}
+              <div className="relative shrink-0">
+                <button
+                  onClick={() => {
+                    setNotifDropdownOpen(!notifDropdownOpen);
+                    if (!notifDropdownOpen) setUserDropdownOpen(false);
+                  }}
+                  className="h-8 sm:h-9 w-8 sm:w-9 rounded-xl border border-slate-200/70 hover:bg-slate-100 text-slate-600 hover:text-slate-900 inline-flex items-center justify-center transition-all relative cursor-pointer"
+                  aria-label="Notifications"
+                >
+                  <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  {unreadNotifications.length > 0 && (
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+                  )}
+                </button>
+
+                {notifDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-20px)] bg-white rounded-2xl shadow-xl border border-slate-200 p-4 space-y-3 z-50 animate-in fade-in-50">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                      <span className="font-extrabold text-xs text-slate-900">Notifications</span>
+                      <span className="text-[10px] text-purple-700 font-bold">{unreadNotifications.length} Unread</span>
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto space-y-2 text-xs">
+                      {notifications.length === 0 ? (
+                        <p className="text-slate-400 text-center py-4">No notifications yet.</p>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id}
+                            onClick={() => {
+                              markNotificationRead(n.id);
+                              if (n.actionUrl) {
+                                if (n.actionUrl.includes('sessions')) setCurrentTab('learn');
+                                if (n.actionUrl.includes('credits')) setCurrentTab('credits');
+                                if (n.actionUrl.includes('marketplace')) setCurrentTab('marketplace');
+                              }
+                              setNotifDropdownOpen(false);
+                            }}
+                            className={`p-2.5 rounded-xl transition-all cursor-pointer ${
+                              n.read ? 'bg-slate-50 hover:bg-slate-100' : 'bg-purple-50/80 hover:bg-purple-100 border border-purple-200'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-0.5">
+                              <span className="font-bold text-slate-900 text-[11px]">{n.title}</span>
+                              <span className="text-[9px] text-slate-400">{n.timestamp}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">{n.message}</p>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
