@@ -1,0 +1,236 @@
+export type SkillLevel = 'Beginner' | 'Intermediate' | 'Advanced';
+export type LearningFormat = 'Online' | 'In-Person' | 'Hybrid';
+
+export type BookCategory = 
+  | 'Computer Science & IT'
+  | 'Electronics & Communication'
+  | 'Mechanical & Civil'
+  | 'Design & Architecture'
+  | 'Mathematics & Sciences'
+  | 'Business & Management'
+  | 'Competitive Exams'
+  | 'General Reference';
+
+export type ListingCategory = 
+  | 'Textbooks'
+  | 'Calculators'
+  | 'Stationery'
+  | 'Lab Accessories'
+  | 'Educational Equipment'
+  | 'Original Study Notes'
+  | 'Free Donations'
+  | BookCategory;
+
+export type ItemCondition = 'New' | 'Like New' | 'Good' | 'Fair';
+export type ListingType = 'sell' | 'donate' | 'exchange';
+export type ListingStatus = 'active' | 'sold' | 'reserved' | 'donated';
+
+export interface SkillEntry {
+  name: string;
+  level: SkillLevel;
+  category?: string;
+  description?: string;
+}
+
+export interface StudentUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  institution: string;
+  course: string;
+  department: string;
+  academicYear: string;
+  isVerified: boolean;
+  verificationStatus: 'verified' | 'pending' | 'unverified';
+  skillsCanTeach: SkillEntry[];
+  skillsWantToLearn: SkillEntry[];
+  preferredFormat: LearningFormat;
+  availableDays: string[];
+  availableTimeSlots: string[];
+  bio: string;
+  credits: number; // Nexathon Learning Credits (5 credits earned per teaching session, 2 needed to unlock match)
+  unlockedTeacherIds: string[]; // Teacher matches unlocked by this student
+  completedSessionsCount: number;
+  itemsReusedCount: number;
+  moneySaved: number;
+  earnings: number;
+  rating: number;
+  reviewsCount?: number;
+  role: 'student' | 'admin';
+}
+
+export interface ServiceListing {
+  id: string;
+  providerId: string;
+  providerName: string;
+  providerAvatar: string;
+  providerCollege: string;
+  providerRating: number;
+  reviewCount: number;
+  title: string;
+  category: string;
+  description: string;
+  price: number;
+  duration: string;
+  deliveryMode: 'Online' | 'In-Person' | 'Flexible';
+  availability: string;
+  isDemo?: boolean;
+}
+
+export interface ServiceBooking {
+  id: string;
+  serviceId: string;
+  serviceTitle: string;
+  providerId: string;
+  providerName: string;
+  clientId: string;
+  clientName: string;
+  scheduledDate: string;
+  timeSlot: string;
+  price: number;
+  status: 'pending' | 'accepted' | 'completed' | 'declined';
+  notes: string;
+  createdAt: string;
+  review?: {
+    rating: number;
+    comment: string;
+    createdAt: string;
+  };
+}
+
+export interface CreditAlert {
+  id: string;
+  type: 'added' | 'deducted' | 'error';
+  amount?: number;
+  message: string;
+}
+
+export interface CreditTransaction {
+  id: string;
+  userId: string;
+  amount: number; // e.g. +5, -2, -5, +5, +2
+  type: 'earned_teaching' | 'spent_learning' | 'purchased_pack' | 'starter_grant' | 'match_unlock' | 'refunded' | 'earned_book' | 'spent_session';
+  description: string;
+  timestamp: string;
+  status: 'completed' | 'pending' | 'failed';
+  relatedEntityId?: string;
+}
+
+export interface MarketplaceListing {
+  id: string;
+  title: string;
+  author?: string;
+  subject?: string;
+  course?: string;
+  description: string;
+  category: ListingCategory;
+  price: number; // in INR (₹)
+  originalReferencePrice: number; // For transparent savings calculation
+  condition: ItemCondition;
+  listingType: ListingType;
+  images: string[];
+  sellerId: string;
+  sellerName: string;
+  sellerAvatar: string;
+  sellerCollege: string;
+  sellerRating: number;
+  status: ListingStatus;
+  datePosted: string;
+  views: number;
+  favouritesCount: number;
+  tags: string[];
+  isDemo?: boolean;
+}
+
+export type BookListing = MarketplaceListing;
+
+export interface TransactionRecord {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  listingCategory: ListingCategory;
+  sellerId: string;
+  sellerName: string;
+  buyerId: string;
+  buyerName: string;
+  price: number;
+  originalReferencePrice: number;
+  estimatedStudentSavings: number;
+  commissionRate: number; // e.g. 0.02 (2%)
+  platformCommission: number; // e.g. ₹10 on ₹500
+  sellerPayout: number; // e.g. ₹490 on ₹500
+  listingType: ListingType;
+  status: 'completed' | 'pending' | 'cancelled';
+  timestamp: string;
+  isDemo: boolean;
+  paymentMethod?: string;
+}
+
+export interface LearningSession {
+  id: string;
+  topic: string;
+  skillName: string;
+  mentorId: string;
+  mentorName: string;
+  mentorAvatar: string;
+  learnerId: string;
+  learnerName: string;
+  learnerAvatar: string;
+  scheduledDate: string;
+  timeSlot: string;
+  format: 'Online Video' | 'Campus In-Person';
+  status: 'pending' | 'accepted' | 'upcoming' | 'completed' | 'cancelled' | 'disputed';
+  creditsRequired: number; // default 5 credits
+  creditsTransferred: boolean;
+  confirmedByMentor: boolean;
+  confirmedByLearner: boolean;
+  notes?: string;
+  meetLink?: string;
+  location?: string;
+}
+
+export interface LearningMatchCycleNode {
+  studentId: string;
+  studentName: string;
+  studentAvatar: string;
+  college: string;
+  teachesSkill: string;
+  teachesToId: string;
+  teachesToName: string;
+  learnsSkill: string;
+  learnsFromId: string;
+  learnsFromName: string;
+}
+
+export interface LearningMatch {
+  id: string;
+  type: 'direct' | '3-way-cycle';
+  nodes: LearningMatchCycleNode[];
+  compatibilityScore: number;
+  matchReasons: string[];
+  status: 'suggested' | 'accepted' | 'declined';
+  isUnlocked?: boolean;
+}
+
+export interface ModerationReport {
+  id: string;
+  targetType: 'listing' | 'session' | 'user';
+  targetId: string;
+  targetTitle: string;
+  reporterName: string;
+  reason: string;
+  timestamp: string;
+  status: 'pending' | 'reviewed' | 'resolved';
+}
+
+export interface NotificationItem {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+  actionUrl?: string;
+  type: 'session_request' | 'session_accepted' | 'session_completed' | 'credits_earned' | 'credits_spent' | 'book_order' | 'system';
+}
