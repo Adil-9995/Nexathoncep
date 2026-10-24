@@ -12,6 +12,10 @@
   h1, h2, h3, h4, .font-heading {
     font-family: 'Outfit', 'Inter', system-ui, sans-serif;
   }
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
 }
 
 /* Glassmorphism and Custom Elements */

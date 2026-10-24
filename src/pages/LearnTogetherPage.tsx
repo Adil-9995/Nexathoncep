@@ -65,6 +65,7 @@ export const LearnTogetherPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [isScanning, setIsScanning] = useState(false);
+  const [copiedRoomId, setCopiedRoomId] = useState<string | null>(null);
 
   // New Skill Inputs
   const [newTeachSkill, setNewTeachSkill] = useState('');
@@ -656,19 +657,53 @@ export const LearnTogetherPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="text-xs text-slate-500">
-                      <span>Room Link: </span>
-                      <strong className="text-slate-800">Connected Sandbox</strong>
+                      <span className="block text-[10px] text-slate-400 font-medium">Live Room Path:</span>
+                      <code className="text-purple-700 font-mono font-bold text-[11px] bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80 inline-block mt-0.5">
+                        {session.meetLink || `/room/${session.id}`}
+                      </code>
                     </div>
 
-                    <button
-                      onClick={() => setActiveLiveMeetSession(session)}
-                      className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-rose-600/30 animate-pulse cursor-pointer"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      <span>Enter Live Room</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const origin = typeof window !== 'undefined' && window.location.origin 
+                            ? window.location.origin 
+                            : 'https://nexathoncep.vercel.app';
+                          const roomSlug = session.meetLink ? session.meetLink.replace(/^\/room\//, '') : session.id;
+                          navigator.clipboard.writeText(`${origin}/room/${roomSlug}`);
+                          setCopiedRoomId(session.id);
+                          setTimeout(() => setCopiedRoomId(null), 2000);
+                        }}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                          copiedRoomId === session.id
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                            : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200'
+                        }`}
+                        title="Copy Live Room Link"
+                      >
+                        {copiedRoomId === session.id ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Link Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Share2 className="w-3.5 h-3.5 text-slate-500" />
+                            <span>Share Room</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => setActiveLiveMeetSession(session)}
+                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 animate-pulse cursor-pointer shrink-0"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Enter Live Room</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

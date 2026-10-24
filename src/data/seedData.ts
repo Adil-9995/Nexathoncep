@@ -1293,7 +1293,7 @@ export const SEED_SESSIONS: LearningSession[] = [
     meetLink: '/room/iot-lab-group-4',
     sessionType: 'group',
     maxParticipants: 4,
-    isLive: false,
+    isLive: true,
     enrolledParticipants: [
       {
         studentId: 'user-amal',
@@ -1333,12 +1333,19 @@ export const SEED_SESSIONS: LearningSession[] = [
     meetLink: '/room/cybersec-study-3',
     sessionType: 'group',
     maxParticipants: 3,
-    isLive: false,
+    isLive: true,
     enrolledParticipants: [
       {
         studentId: 'user-ann-mary',
         studentName: 'Ann Mary Terrance Paul',
         studentAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=250&q=80',
+        role: 'learner',
+        joinedAt: '2026-10-24'
+      },
+      {
+        studentId: 'user-adil',
+        studentName: 'Adil Hassan',
+        studentAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
         role: 'learner',
         joinedAt: '2026-10-24'
       }

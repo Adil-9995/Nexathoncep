@@ -72,21 +72,21 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
         />
       )}
 
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 gap-3 lg:gap-6">
+      <header className="navbar navbar-expand-xl sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all py-0">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full">
+          <div className="flex items-center justify-between h-16 gap-2 sm:gap-4 lg:gap-6 w-full">
             
             {/* Logo & Brand (shrink-0, vertically centered) */}
             <div 
               onClick={() => handleNavClick('home')}
-              className="flex items-center gap-2.5 cursor-pointer group shrink-0"
+              className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group shrink-0"
             >
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-700 via-indigo-600 to-purple-800 flex items-center justify-center text-white shadow-md shadow-purple-900/15 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-purple-700 via-indigo-600 to-purple-800 flex items-center justify-center text-white shadow-md shadow-purple-900/15 group-hover:scale-105 transition-transform shrink-0">
                 <GraduationCap className="w-5 h-5 text-amber-300" />
               </div>
               <div className="flex flex-col justify-center">
                 <div className="flex items-center gap-1.5 leading-none">
-                  <span className="font-heading font-black text-xl text-slate-900 tracking-tight">
+                  <span className="font-heading font-black text-lg sm:text-xl text-slate-900 tracking-tight">
                     Campus<span className="text-purple-700">Loop</span>
                   </span>
                   <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-100 text-purple-700 border border-purple-200/60 leading-none">
@@ -99,8 +99,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
               </div>
             </div>
 
-            {/* Desktop Navigation (Segmented Pill Bar, Centered, No 1px jumps) */}
-            <nav className="hidden md:flex items-center gap-1 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70 shadow-xs">
+            {/* Desktop Navigation (Segmented Pill Bar, Centered, Expanded on XL) */}
+            <nav className="hidden xl:flex items-center gap-1 p-1 bg-slate-100/90 rounded-2xl border border-slate-200/70 shadow-xs">
               {navLinks.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
@@ -109,15 +109,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                   <button
                     key={item.id}
                     onClick={() => handleNavClick(item.id)}
-                    className={`h-9 px-2.5 lg:px-3.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 lg:gap-2 whitespace-nowrap cursor-pointer border ${
+                    className={`h-9 px-3 lg:px-3.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer border ${
                       isActive 
                         ? 'bg-white text-purple-900 shadow-sm border-purple-200/80 font-extrabold' 
                         : 'text-slate-600 hover:text-slate-900 hover:bg-white/60 border-transparent'
                     }`}
                   >
-                    <Icon className={`w-3.5 h-3.5 lg:w-4 lg:h-4 shrink-0 ${isActive ? 'text-purple-700' : 'text-slate-400'}`} />
-                    <span className="hidden xl:inline">{item.label}</span>
-                    <span className="xl:hidden">{item.shortLabel}</span>
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-purple-700' : 'text-slate-400'}`} />
+                    <span>{item.label}</span>
                     {item.badge && (
                       <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 shadow-xs shrink-0 leading-none">
                         {item.badge}
@@ -128,35 +127,35 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
               })}
             </nav>
 
-            {/* Right Header Controls (Uniform h-9 height, perfectly aligned) */}
-            <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Right Header Controls (Compact on mobile, perfectly within bounds) */}
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
               
-              {/* Interactive Wallet Credits Pill */}
+              {/* Interactive Wallet Credits Pill - Always visible, compact on mobile */}
               <button
                 onClick={() => setCurrentTab('credits')}
-                className="h-9 px-3 rounded-xl bg-amber-50 hover:bg-amber-100/90 text-amber-950 font-bold text-xs border border-amber-300/80 shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer group shrink-0"
+                className="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-amber-50 hover:bg-amber-100/90 text-amber-950 font-bold text-xs border border-amber-300/80 shadow-xs inline-flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer group shrink-0"
                 title="Your Learning Credits balance. Click to view credit wallet."
               >
-                <Coins className="w-4 h-4 text-amber-500 fill-amber-400 group-hover:rotate-12 transition-transform shrink-0" />
-                <span className="font-extrabold whitespace-nowrap">{currentUser.credits}</span>
+                <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 fill-amber-400 group-hover:rotate-12 transition-transform shrink-0" />
+                <span className="font-extrabold whitespace-nowrap text-xs">{currentUser.credits}</span>
                 <span className="hidden sm:inline font-semibold text-amber-900/80 text-[11px]">Credits</span>
               </button>
 
-              {/* Quick Top-up Button */}
+              {/* Quick Top-up Button - Hidden on smaller screens */}
               <button
                 onClick={() => {
                   setPendingUnlockTeacherId(null);
                   setFakePaymentModalOpen(true);
                 }}
-                className="hidden sm:inline-flex items-center justify-center gap-1 h-9 px-2.5 lg:px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs border border-purple-200/70 transition-all cursor-pointer shrink-0"
+                className="hidden lg:inline-flex items-center justify-center gap-1 h-9 px-2.5 lg:px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs border border-purple-200/70 transition-all cursor-pointer shrink-0"
                 title="Add Credits"
               >
                 <Plus className="w-3.5 h-3.5 text-purple-700 shrink-0" />
                 <span>Top-Up</span>
               </button>
 
-              {/* Notifications Dropdown */}
-              <div className="relative shrink-0">
+              {/* Notifications Dropdown - Hidden on mobile (<640px) to prevent overflow */}
+              <div className="relative shrink-0 hidden sm:block">
                 <button
                   onClick={() => {
                     setNotifDropdownOpen(!notifDropdownOpen);
@@ -211,8 +210,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 )}
               </div>
 
-              {/* Profile Dropdown */}
-              <div className="relative shrink-0">
+              {/* Profile Dropdown - Hidden on mobile (<640px) to prevent overflow */}
+              <div className="relative shrink-0 hidden sm:block">
                 <button
                   onClick={() => {
                     setUserDropdownOpen(!userDropdownOpen);
@@ -225,7 +224,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                     alt={currentUser.name} 
                     className="w-6 h-6 rounded-lg object-cover ring-1.5 ring-purple-600/40 shrink-0"
                   />
-                  <span className="hidden sm:inline font-bold max-w-[85px] lg:max-w-[105px] truncate">{currentUser.name}</span>
+                  <span className="hidden md:inline font-bold max-w-[85px] lg:max-w-[105px] truncate">{currentUser.name}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 </button>
 
@@ -325,22 +324,26 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 )}
               </div>
 
-              {/* Mobile Menu Hamburger */}
+              {/* Mobile Menu Hamburger Toggler - Visible on screens below XL */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden h-9 w-9 rounded-xl border border-slate-200/70 hover:bg-slate-100 text-slate-700 inline-flex items-center justify-center cursor-pointer shrink-0"
+                className="xl:hidden h-8 sm:h-9 w-8 sm:w-9 rounded-xl border border-slate-200/80 hover:bg-slate-100 text-slate-700 inline-flex items-center justify-center cursor-pointer shrink-0 relative transition-all"
                 aria-label="Toggle Navigation Menu"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {/* Mobile notification dot on hamburger */}
+                {unreadNotifications.length > 0 && (
+                  <span className="sm:hidden absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white animate-pulse" />
+                )}
               </button>
 
             </div>
 
           </div>
 
-          {/* Mobile Navigation Drawer */}
+          {/* Mobile Navigation Drawer (Visible on screens below XL) */}
           {mobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-100 space-y-3 animate-in slide-in-from-top-2">
+            <div className="xl:hidden py-4 border-t border-slate-100 space-y-3 animate-in slide-in-from-top-2">
               {/* User card in mobile drawer */}
               <div className="p-3 bg-purple-50 rounded-2xl border border-purple-100 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -351,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                   />
                   <div>
                     <h4 className="font-bold text-xs text-slate-900">{currentUser.name}</h4>
-                    <p className="text-[10px] text-slate-500 truncate max-w-[150px]">{currentUser.course}</p>
+                    <p className="text-[10px] text-slate-500 truncate max-w-[140px]">{currentUser.course}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -361,6 +364,19 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                   </span>
                 </div>
               </div>
+
+              {/* Unread Notifications Alert in Mobile Drawer */}
+              {unreadNotifications.length > 0 && (
+                <div className="p-2.5 bg-rose-50 rounded-xl border border-rose-200/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-rose-800 text-xs font-bold">
+                    <Bell className="w-4 h-4 text-rose-600" />
+                    <span>{unreadNotifications.length} New Notification(s)</span>
+                  </div>
+                  <span className="text-[10px] font-extrabold bg-rose-200 text-rose-900 px-2 py-0.5 rounded-full">
+                    Unread
+                  </span>
+                </div>
+              )}
 
               {/* Nav Links */}
               <div className="space-y-1">
@@ -401,6 +417,30 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, setCurrentTab, onOpe
                 <Coins className="w-4 h-4 text-amber-300 fill-amber-300" />
                 <span>Add / Top-Up Credits</span>
               </button>
+
+              {/* Mobile Drawer Profile & Dashboard Links */}
+              <div className="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs font-bold">
+                <button
+                  onClick={() => {
+                    setCurrentTab('dashboard');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-purple-700" />
+                  <span>My Profile</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onOpenAuth();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-purple-700" />
+                  <span>New Student</span>
+                </button>
+              </div>
             </div>
           )}
 
